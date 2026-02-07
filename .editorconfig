@@ -3,5 +3,5 @@ indent_style = space
 indent_size = 4
 max_line_length = 140
 
-[*.{yml,yaml,json}]
+[*.{yml,yaml,json,js,ts,jsx,tsx}]
 indent_size = 2
