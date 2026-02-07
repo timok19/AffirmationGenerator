@@ -1,0 +1,7 @@
+<Solution>
+    <Project Path="AffirmationGenerator.Client/AffirmationGenerator.Client.esproj">
+        <Build />
+        <Deploy />
+    </Project>
+    <Project Path="AffirmationGenerator.Server/AffirmationGenerator.Server.csproj" />
+</Solution>
