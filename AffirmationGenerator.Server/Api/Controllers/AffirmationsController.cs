@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace AffirmationGenerator.Server.Controllers;
+namespace AffirmationGenerator.Server.Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+[Route("affirmations")]
+public class AffirmationsController : ControllerBase
 {
     private static readonly string[] Summaries =
     [
