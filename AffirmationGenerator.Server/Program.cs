@@ -5,7 +5,7 @@ using AffirmationGenerator.Server.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddApi().AddApplication().AddInfrastructure();
+builder.Services.AddApi().AddApplication().AddInfrastructure(builder.Configuration);
 
 // Configure the HTTP request pipeline.
 var app = builder.Build();

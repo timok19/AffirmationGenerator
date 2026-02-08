@@ -49,7 +49,7 @@ function App() {
 
     async function populateWeatherData() {
         const response = await fetch('affirmations');
-        const data = await response.json();
+        const data = await response.json().then(responseData => responseData as Forecast[]);
         setForecasts(data);
     }
 }

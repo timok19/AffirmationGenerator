@@ -1,34 +1,18 @@
+using AffirmationGenerator.Server.Api.Extensions;
+using AffirmationGenerator.Server.Api.Models;
+using AffirmationGenerator.Server.Application.Commands;
+using AffirmationGenerator.Server.Application.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AffirmationGenerator.Server.Api.Controllers;
 
 [ApiController]
 [Route("affirmations")]
-public class AffirmationsController : ControllerBase
+public class AffirmationsController(GenerateAffirmationCommand generateAffirmationCommand) : ControllerBase
 {
-    private static readonly string[] Summaries =
-    [
-        "Freezing",
-        "Bracing",
-        "Chilly",
-        "Cool",
-        "Mild",
-        "Warm",
-        "Balmy",
-        "Hot",
-        "Sweltering",
-        "Scorching",
-    ];
-
-    [HttpGet]
-    public IEnumerable<WeatherForecast> Get() =>
-        Enumerable
-            .Range(1, 5)
-            .Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)],
-            })
-            .ToArray();
+    [HttpPost("generate")]
+    [ProducesResponseType<AffirmationResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AffirmationResponse>> Generate([FromBody] GenerateAffirmationRequest request) =>
+        await generateAffirmationCommand.Handle(request).ToActionResult();
 }

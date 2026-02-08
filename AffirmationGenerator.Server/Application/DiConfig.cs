@@ -1,12 +1,15 @@
-using AffirmationGenerator.Server.Application.Handlers;
+using AffirmationGenerator.Server.Application.Commands;
 
 namespace AffirmationGenerator.Server.Application;
 
 public static class DiConfig
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.AddScoped<GetAffirmationHandler>();
-        return services;
+        public IServiceCollection AddApplication()
+        {
+            services.AddScoped<GenerateAffirmationCommand>();
+            return services;
+        }
     }
 }

@@ -12,4 +12,7 @@ public enum AffirmationLanguage
 
     [EnumMember(Value = "cz")]
     Czech,
+
+    [EnumMember(Value = "fr")]
+    French,
 }
