@@ -21,16 +21,6 @@ public sealed class GenerateAffirmationCommand(
             from translatedData in Translate(affirmation, targetLanguageCode)
             select ToResponse(translatedData.LanguageCode, translatedData.TranslatedAffirmation);
 
-    private static Result<string> MapLanguageCode(string affirmationLanguageCode) =>
-        affirmationLanguageCode switch
-        {
-            AffirmationLanguage.English => LanguageCode.English,
-            AffirmationLanguage.German => LanguageCode.German,
-            AffirmationLanguage.Czech => LanguageCode.Czech,
-            AffirmationLanguage.French => LanguageCode.French,
-            _ => Result<string>.Error(new InvalidLanguageCode(affirmationLanguageCode)),
-        };
-
     private async Task<Result<string>> GetAffirmation()
     {
         var affirmationResponse = await affirmationClient.GetAffirmation();
@@ -44,6 +34,16 @@ public sealed class GenerateAffirmationCommand(
 
         return affirmation;
     }
+
+    private static Result<string> MapLanguageCode(string affirmationLanguageCode) =>
+        affirmationLanguageCode switch
+        {
+            AffirmationLanguage.English => LanguageCode.English,
+            AffirmationLanguage.German => LanguageCode.German,
+            AffirmationLanguage.Czech => LanguageCode.Czech,
+            AffirmationLanguage.French => LanguageCode.French,
+            _ => Result<string>.Error(new InvalidLanguageCode(affirmationLanguageCode)),
+        };
 
     private async Task<Result<(string LanguageCode, string TranslatedAffirmation)>> Translate(string affirmation, string targetLanguageCode)
     {
