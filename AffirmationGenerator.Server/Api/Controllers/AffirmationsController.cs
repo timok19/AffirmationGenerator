@@ -1,8 +1,10 @@
+using AffirmationGenerator.Server.Api.Authentication;
 using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Application.Commands;
 using AffirmationGenerator.Server.Application.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AffirmationGenerator.Server.Api.Controllers;
 
@@ -11,8 +13,10 @@ namespace AffirmationGenerator.Server.Api.Controllers;
 public class AffirmationsController(GenerateAffirmationCommand generateAffirmationCommand) : ControllerBase
 {
     [HttpPost("generate")]
+    [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<AffirmationResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AffirmationResponse>> Generate([FromBody] GenerateAffirmationRequest request) =>
         await generateAffirmationCommand.Handle(request).ToActionResult();
 }

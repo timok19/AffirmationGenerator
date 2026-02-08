@@ -17,10 +17,15 @@ if (app.Environment.IsProduction() == false)
 }
 
 app.UseDefaultFiles();
+
 app.UseStaticFiles();
+
 app.UseHttpsRedirection();
 
+app.UseRateLimiter();
+
 app.MapControllers();
+
 app.MapFallbackToFile("/index.html");
 
 app.Run();
