@@ -24,6 +24,8 @@ app.UseHttpsRedirection();
 
 app.UseRateLimiter();
 
+app.UseSession();
+
 app.MapControllers();
 
 app.MapFallbackToFile("/index.html");

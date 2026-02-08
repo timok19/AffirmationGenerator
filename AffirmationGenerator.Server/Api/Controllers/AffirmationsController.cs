@@ -1,4 +1,3 @@
-using AffirmationGenerator.Server.Api.Authentication;
 using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Application.Commands;

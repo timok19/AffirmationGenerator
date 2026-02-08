@@ -1,5 +1,4 @@
 using System.Threading.RateLimiting;
-using AffirmationGenerator.Server.Api.Authentication;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace AffirmationGenerator.Server.Api;
@@ -12,9 +11,6 @@ public static class DiConfig
         {
             services.AddControllers();
             services.AddOpenApi();
-
-            services.AddHttpContextAccessor();
-            services.AddMemoryCache();
 
             services.AddRateLimiter(rateLimiterOptions =>
             {
