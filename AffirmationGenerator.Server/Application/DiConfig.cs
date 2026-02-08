@@ -9,6 +9,7 @@ public static class DiConfig
         public IServiceCollection AddApplication()
         {
             services.AddHttpContextAccessor();
+            services.AddDistributedMemoryCache();
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromDays(1);

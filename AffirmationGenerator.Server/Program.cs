@@ -22,9 +22,9 @@ app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
-app.UseRateLimiter();
-
 app.UseSession();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

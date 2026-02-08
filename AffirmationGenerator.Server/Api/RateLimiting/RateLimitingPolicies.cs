@@ -1,4 +1,4 @@
-namespace AffirmationGenerator.Server.Api;
+namespace AffirmationGenerator.Server.Api.RateLimiting;
 
 public static class RateLimitingPolicies
 {

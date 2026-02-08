@@ -1,5 +1,5 @@
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
+using AffirmationGenerator.Server.Api.RateLimiting;
 
 namespace AffirmationGenerator.Server.Api;
 
@@ -16,19 +16,34 @@ public static class DiConfig
             {
                 rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-                rateLimiterOptions.AddFixedWindowLimiter(
+                rateLimiterOptions.AddPolicy(
                     RateLimitingPolicies.Fixed,
-                    options =>
-                    {
-                        options.Window = TimeSpan.FromDays(1);
-                        options.PermitLimit = 5;
-                        options.QueueLimit = 0;
-                        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    }
+                    httpContext =>
+                        RateLimitPartition.GetFixedWindowLimiter(
+                            IServiceCollection.ResolveRateLimitKey(httpContext),
+                            _ => new FixedWindowRateLimiterOptions
+                            {
+                                Window = TimeSpan.FromDays(1),
+                                PermitLimit = 5,
+                                QueueLimit = 0,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            }
+                        )
                 );
             });
 
             return services;
+        }
+
+        private static string ResolveRateLimitKey(HttpContext httpContext)
+        {
+            var sessionKey = httpContext.Session.GetString(RateLimitingConstants.SessionKey);
+            if (string.IsNullOrWhiteSpace(sessionKey) == false)
+                return sessionKey;
+
+            sessionKey = httpContext.Session.Id;
+            httpContext.Session.SetString(RateLimitingConstants.SessionKey, sessionKey);
+            return sessionKey;
         }
     }
 }
