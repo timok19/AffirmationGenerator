@@ -6,7 +6,7 @@ namespace AffirmationGenerator.Server.Infrastructure.DeepL;
 public sealed class DeepLTranslatorClient(IOptions<DeepLTranslatorClientOptions> options, ILogger<DeepLTranslatorClient> logger)
     : IDeepLTranslatorClient
 {
-    private DeepLTranslatorClientOptions TranslatorClientOptions => options.Value;
+    private DeepLTranslatorClientOptions Options => options.Value;
 
     public async Task<string> Translate(string text, string sourceLanguage, string targetLanguage)
     {
@@ -25,11 +25,7 @@ public sealed class DeepLTranslatorClient(IOptions<DeepLTranslatorClientOptions>
         {
             var textResult = await client.TranslateTextAsync(text, sourceLanguage, targetLanguage);
 
-            logger.LogInformation(
-                "Billed characters {BilledCharacters} and model type used {ModelTypeUsed}",
-                textResult.BilledCharacters,
-                textResult.ModelTypeUsed
-            );
+            logger.LogInformation("Billed characters {BilledCharacters}", textResult.BilledCharacters);
 
             return textResult.Text;
         }
@@ -41,5 +37,5 @@ public sealed class DeepLTranslatorClient(IOptions<DeepLTranslatorClientOptions>
         return string.Empty;
     }
 
-    private DeepLClient GetDeepLClient() => new(TranslatorClientOptions.ApiKey);
+    private DeepLClient GetDeepLClient() => new(Options.ApiKey);
 }

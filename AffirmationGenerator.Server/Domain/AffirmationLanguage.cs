@@ -1,18 +1,9 @@
-using System.Runtime.Serialization;
-
 namespace AffirmationGenerator.Server.Domain;
 
-public enum AffirmationLanguage
+public static class AffirmationLanguage
 {
-    [EnumMember(Value = "en")]
-    English,
-
-    [EnumMember(Value = "de")]
-    German,
-
-    [EnumMember(Value = "cz")]
-    Czech,
-
-    [EnumMember(Value = "fr")]
-    French,
+    public const string English = "en";
+    public const string German = "de";
+    public const string Czech = "cs";
+    public const string French = "fr";
 }

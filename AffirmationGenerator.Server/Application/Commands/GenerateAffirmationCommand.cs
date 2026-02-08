@@ -15,34 +15,40 @@ public sealed class GenerateAffirmationCommand(
 {
     public async Task<Result<AffirmationResponse>> Handle(GenerateAffirmationRequest request)
     {
-        var affirmationResponse = await affirmationClient.GetAffirmation();
-        var affirmationText = affirmationResponse.Affirmation ?? string.Empty;
+        var targetLanguageCode = MapLanguageCode(request.AffirmationLanguage);
+        if (string.IsNullOrWhiteSpace(targetLanguageCode))
+            return Result<AffirmationResponse>.Error(new InvalidLanguageCode(request.AffirmationLanguage));
 
-        if (string.IsNullOrWhiteSpace(affirmationText))
+        var affirmationResponse = await affirmationClient.GetAffirmation();
+        var affirmation = affirmationResponse.Affirmation ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(affirmation))
         {
             logger.LogError("Unable to get affirmation text");
             return Result<AffirmationResponse>.Error(new AffirmationNotFound());
         }
 
-        if (request.TargetLanguage == AffirmationLanguage.English)
-            return Result<AffirmationResponse>.Success(new AffirmationResponse(affirmationText));
+        if (targetLanguageCode == LanguageCode.English)
+            return Result<AffirmationResponse>.Success(
+                new AffirmationResponse(new Dictionary<string, string> { [LanguageCode.English] = affirmation })
+            );
 
-        var targetLanguageCode = MapLanguageCode(request.TargetLanguage);
+        var translatedAffirmation = await translatorClient.Translate(affirmation, LanguageCode.English, targetLanguageCode);
 
-        var translation = await translatorClient.Translate(affirmationText, LanguageCode.English, targetLanguageCode);
-
-        return string.IsNullOrWhiteSpace(translation)
+        return string.IsNullOrWhiteSpace(translatedAffirmation)
             ? Result<AffirmationResponse>.Error(new TranslationError())
-            : Result<AffirmationResponse>.Success(new AffirmationResponse(translation));
+            : Result<AffirmationResponse>.Success(
+                new AffirmationResponse(new Dictionary<string, string> { [targetLanguageCode] = translatedAffirmation })
+            );
     }
 
-    private static string MapLanguageCode(AffirmationLanguage language) =>
-        language switch
+    private static string MapLanguageCode(string affirmationLanguage) =>
+        affirmationLanguage switch
         {
             AffirmationLanguage.English => LanguageCode.English,
             AffirmationLanguage.German => LanguageCode.German,
             AffirmationLanguage.Czech => LanguageCode.Czech,
             AffirmationLanguage.French => LanguageCode.French,
-            _ => throw new ArgumentOutOfRangeException(nameof(language)),
+            _ => string.Empty,
         };
 }

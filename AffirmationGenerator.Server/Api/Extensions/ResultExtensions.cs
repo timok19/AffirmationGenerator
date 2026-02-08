@@ -32,6 +32,7 @@ public static class ResultExtensions
                 {
                     AffirmationNotFound => "No affirmation available for today :(",
                     TranslationError => "Translation failed. English version will be used instead",
+                    InvalidLanguageCode invalidLanguageCode => $"Invalid language code: {invalidLanguageCode.LanguageCode}",
                     _ => error.Details.GetType().Name,
                 },
             };
