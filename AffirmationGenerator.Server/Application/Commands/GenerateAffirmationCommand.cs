@@ -16,7 +16,8 @@ public sealed class GenerateAffirmationCommand(
     IHttpContextAccessor httpContextAccessor
 )
 {
-    private ISession Session => httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException();
+    private ISession Session =>
+        httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException($"{nameof(HttpContext)} is missing!");
 
     private const string RemainingAffirmationsKey = "RemainingAffirmations";
 
