@@ -1,3 +1,4 @@
+using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Core;
 using AffirmationGenerator.Server.Core.Extensions;
@@ -11,9 +12,14 @@ namespace AffirmationGenerator.Server.Application.Commands;
 public sealed class GenerateAffirmationCommand(
     IAffirmationClient affirmationClient,
     IDeepLTranslatorClient translatorClient,
-    ILogger<GenerateAffirmationCommand> logger
+    ILogger<GenerateAffirmationCommand> logger,
+    IHttpContextAccessor httpContextAccessor
 )
 {
+    private ISession Session => httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException();
+
+    private const string RemainingAffirmationsKey = "RemainingAffirmations";
+
     public async Task<Result<AffirmationResponse>> Handle(GenerateAffirmationRequest request) =>
         await
             from affirmation in GetAffirmation()
@@ -23,6 +29,8 @@ public sealed class GenerateAffirmationCommand(
 
     private async Task<Result<string>> GetAffirmation()
     {
+        var remainingAffirmations = GetRemainingAffirmations();
+
         var affirmationResponse = await affirmationClient.GetAffirmation();
         var affirmation = affirmationResponse.Affirmation ?? string.Empty;
 
@@ -31,6 +39,8 @@ public sealed class GenerateAffirmationCommand(
             logger.LogError("Unable to get affirmation text");
             return Result<string>.Error(new AffirmationNotFound());
         }
+
+        SetRemainingAffirmations(remainingAffirmations);
 
         return affirmation;
     }
@@ -58,5 +68,20 @@ public sealed class GenerateAffirmationCommand(
         return (targetLanguageCode, translatedAffirmation);
     }
 
-    private static AffirmationResponse ToResponse(string targetLanguageCode, string affirmation) => new(targetLanguageCode, affirmation);
+    private AffirmationResponse ToResponse(string targetLanguageCode, string affirmation) =>
+        new(targetLanguageCode, affirmation, GetRemainingAffirmations());
+
+    private int GetRemainingAffirmations() => Session.GetInt32(RemainingAffirmationsKey) ?? RateLimitingConstants.MaxRequestsPerDay;
+
+    private void SetRemainingAffirmations(int remainingAffirmations)
+    {
+        if (remainingAffirmations <= 0)
+            return;
+
+        remainingAffirmations -= 1;
+        if (remainingAffirmations <= 0)
+            remainingAffirmations = 0;
+
+        Session.SetInt32(RemainingAffirmationsKey, remainingAffirmations);
+    }
 }

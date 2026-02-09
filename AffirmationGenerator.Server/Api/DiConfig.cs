@@ -24,7 +24,7 @@ public static class DiConfig
                             _ => new FixedWindowRateLimiterOptions
                             {
                                 Window = TimeSpan.FromDays(1),
-                                PermitLimit = 5,
+                                PermitLimit = RateLimitingConstants.MaxRequestsPerDay,
                                 QueueLimit = 0,
                                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             }
