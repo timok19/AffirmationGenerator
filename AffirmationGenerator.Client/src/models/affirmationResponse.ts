@@ -1,4 +1,4 @@
-interface AffirmationResponse {
+type AffirmationResponse = {
   targetLanguageCode: string;
   affirmation: string;
   remaining: number;
