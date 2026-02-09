@@ -19,14 +19,14 @@ public sealed class GenerateAffirmationCommand(
     private ISession Session =>
         httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException($"{nameof(HttpContext)} is missing!");
 
-    private const string RemainingAffirmationsKey = "RemainingAffirmations";
+    private string RemainingAffirmationsKey => $"remaining-affirmations-{Session.Id}";
 
     public async Task<Result<AffirmationResponse>> Handle(GenerateAffirmationRequest request) =>
         await
             from affirmation in GetAffirmation()
             from targetLanguageCode in MapLanguageCode(request.AffirmationLanguageCode)
-            from translatedData in Translate(affirmation, targetLanguageCode)
-            select ToResponse(translatedData.LanguageCode, translatedData.TranslatedAffirmation);
+            from translatedAffirmation in Translate(targetLanguageCode, affirmation)
+            select ToResponse(targetLanguageCode, translatedAffirmation);
 
     private async Task<Result<string>> GetAffirmation()
     {
@@ -56,17 +56,17 @@ public sealed class GenerateAffirmationCommand(
             _ => Result<string>.Error(new InvalidLanguageCode(affirmationLanguageCode)),
         };
 
-    private async Task<Result<(string LanguageCode, string TranslatedAffirmation)>> Translate(string affirmation, string targetLanguageCode)
+    private async Task<Result<string>> Translate(string targetLanguageCode, string affirmation)
     {
         if (targetLanguageCode == LanguageCode.English)
-            return (LanguageCode.English, affirmation);
+            return affirmation;
 
         var translatedAffirmation = await translatorClient.Translate(affirmation, LanguageCode.English, targetLanguageCode);
 
         if (string.IsNullOrWhiteSpace(translatedAffirmation))
-            return Result<(string, string)>.Error(new TranslationError());
+            return Result<string>.Error(new TranslationError());
 
-        return (targetLanguageCode, translatedAffirmation);
+        return translatedAffirmation;
     }
 
     private AffirmationResponse ToResponse(string targetLanguageCode, string affirmation) =>
