@@ -1,3 +1,4 @@
+using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Core;
@@ -18,8 +19,6 @@ public sealed class GenerateAffirmationCommand(
 {
     private ISession Session =>
         httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException($"{nameof(HttpContext)} is missing!");
-
-    private string RemainingAffirmationsKey => $"remaining-affirmations-{Session.Id}";
 
     public async Task<Result<AffirmationResponse>> Handle(GenerateAffirmationRequest request) =>
         await
@@ -72,7 +71,7 @@ public sealed class GenerateAffirmationCommand(
     private AffirmationResponse ToResponse(string targetLanguageCode, string affirmation) =>
         new(targetLanguageCode, affirmation, GetRemainingAffirmations());
 
-    private int GetRemainingAffirmations() => Session.GetInt32(RemainingAffirmationsKey) ?? RateLimitingConstants.MaxRequestsPerDay;
+    private int GetRemainingAffirmations() => Session.GetInt32(Session.RemainingRequestsKey) ?? RateLimitingConstants.MaxRequestsPerDay;
 
     private void SetRemainingAffirmations(int remainingAffirmations)
     {
@@ -83,6 +82,6 @@ public sealed class GenerateAffirmationCommand(
         if (remainingAffirmations <= 0)
             remainingAffirmations = 0;
 
-        Session.SetInt32(RemainingAffirmationsKey, remainingAffirmations);
+        Session.SetInt32(Session.RemainingRequestsKey, remainingAffirmations);
     }
 }

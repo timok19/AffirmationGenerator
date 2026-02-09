@@ -1,30 +1,25 @@
 import './App.css';
-import LanguageDropdown from "./components/LanguageDropdown.tsx";
+import AffirmationLanguagesDropdown from "./components/AffirmationLanguagesDropdown.tsx";
 
 import AffirmationResponse from './models/affirmationResponse.ts';
-import { affirmationLanguages } from './models/affirmationLanguages.ts';
 
-import { useState } from 'react';
+import {useState} from 'react';
 import axios from 'axios';
 
 function App() {
   const totalAffirmations = 5;
-  
+
   const [remainingAffirmations, setRemainingAffirmations] = useState(totalAffirmations);
   const [affirmationText, setAffirmationText] = useState('Affirmation text here');
   const [errorMessage, setErrorMessage] = useState('');
-  const [selectedLanguageCode, setSelectedLanguageCode] = useState(affirmationLanguages[0].code);
+  const [selectedLanguageCode, setSelectedLanguageCode] = useState('en');
 
   return (
     <div>
       <p className="text-sm">Affirmations per day: {remainingAffirmations}</p>
-    
       <p className={"text-accent"}>{affirmationText}</p>
-    
       {errorMessage ? <p className="text-error">{errorMessage}</p> : null}
-      
-      <LanguageDropdown value={selectedLanguageCode} onChange={setSelectedLanguageCode} />
-      
+      <AffirmationLanguagesDropdown value={selectedLanguageCode} onChange={setSelectedLanguageCode}/>
       <button className={"btn"} onClick={generateAffirmation}>Generate</button>
     </div>
   );
@@ -32,22 +27,22 @@ function App() {
   async function generateAffirmation() {
     try {
       const response = await axios.postForm<AffirmationResponse>(
-        '/affirmations/generate', 
+        '/affirmations/generate',
         {
           affirmationLanguageCode: selectedLanguageCode
         });
 
       setAffirmationText(response.data.affirmation);
       setRemainingAffirmations(response.data.remaining);
-      
+
       setErrorMessage('');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 429) {
         setErrorMessage('You used the maximum amount of affirmations per day.');
         return;
       }
-      
-      setErrorMessage('Unable to generate affirmation right now.');
+
+      setErrorMessage('Unable to generate affirmation right now :(');
     }
   }
 }
