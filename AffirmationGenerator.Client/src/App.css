@@ -1,3 +1,58 @@
 ﻿@import "tailwindcss";
 
 @plugin "daisyui";
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animated-bg {
+    background: linear-gradient(-45deg, #fef08a, #86efac, #93c5fd);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+}
+
+.typing-cursor::after {
+    content: '|';
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pop-shake {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.05) rotate(3deg); }
+    50% { transform: scale(1.05) rotate(-3deg); }
+    75% { transform: scale(1.02) rotate(1.5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-slide-down {
+    animation: slide-down 0.5s ease-out forwards;
+}
+
+.animate-pop-shake {
+    animation: pop-shake 0.5s ease-in-out;
+}

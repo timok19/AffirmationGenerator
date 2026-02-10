@@ -12,12 +12,12 @@ namespace AffirmationGenerator.Server.Api.Controllers;
 [Route("affirmations")]
 public class AffirmationsController(GenerateAffirmationCommand generateAffirmationCommand) : ControllerBase
 {
-    [HttpPost("generate")]
+    [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<AffirmationResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<AffirmationResponse>> Generate([FromForm] GenerateAffirmationRequest request) =>
+    [ProducesResponseType<ErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<AffirmationResponse>> Generate([FromQuery] GenerateAffirmationRequest request) =>
         await generateAffirmationCommand.Handle(request).ToActionResult();
 }

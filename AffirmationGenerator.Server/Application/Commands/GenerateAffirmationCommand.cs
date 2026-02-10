@@ -79,6 +79,7 @@ public sealed class GenerateAffirmationCommand(
             return;
 
         remainingAffirmations -= 1;
+
         if (remainingAffirmations <= 0)
             remainingAffirmations = 0;
 
