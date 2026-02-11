@@ -25,20 +25,20 @@ function App() {
 
   async function handleLanguageChange(code: string) {
     if (isInteractionDisabled) return;
-    
+
     setSelectedLanguageCode(code);
-    
+
     setIsFetching(true);
-    
+
     await getAffirmation(code);
-    
+
     setIsFetching(false);
   }
 
   async function getAffirmation(languageCode: string) {
     try {
       setErrorMessage('');
-      
+
       const response = await axios.get<AffirmationResponse>(
         '/affirmations',
         {
@@ -48,13 +48,13 @@ function App() {
         });
 
       setAffirmationText(response.data.affirmation);
-      
+
       setDisplayedText('');
-      
+
       setRemainingAffirmations(response.data.remaining);
-      
+
       setIsAnimating(true);
-      
+
       setTimeout(() => setIsAnimating(false), 500);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 429) {
@@ -65,18 +65,18 @@ function App() {
       setErrorMessage('Unable to generate affirmation right now ☹️');
     }
   }
-  
+
   async function getRemainingAffirmations() {
     try {
       const response = await axios.get<RemainingAffirmationsResponse>('/affirmations/remaining');
-      
+
       setRemainingAffirmations(response.data.remainingAffirmations);
-      
+
     } catch (error) {
       console.error('Failed to fetch remaining affirmations');
     }
   }
-  
+
   useEffect(() => {
     getRemainingAffirmations();
   }, []);
@@ -92,9 +92,9 @@ function App() {
 
   return (
     <div className="animated-bg min-h-screen flex flex-col items-center justify-between p-4 font-sans text-gray-800">
-      <div className="flex-grow flex flex-col items-center justify-center w-full max-w-4xl relative">
+      <div className="grow flex flex-col items-center justify-center w-full max-w-4xl relative">
         <div
-          className={`glass w-full min-h-[600px] px-6 pt-6 pb-40 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative z-10 ${isAnimating ? 'animate-pop-shake' : ''}`}>
+          className={`glass w-full min-h-150 px-10 pt-6 pb-40 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative z-10 ${isAnimating ? 'animate-pop-shake' : ''}`}>
           <AffirmationText text={displayedText} totalLength={affirmationText.length}/>
 
           <RemainingAffirmationsText
