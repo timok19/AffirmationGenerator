@@ -11,10 +11,9 @@ function RemainingAffirmationsText({count}: RemainingAffirmationsTextProps) {
 
   return (
     <div className="absolute bottom-8 left-8">
-      <p className="text-xl opacity-90">
-        Available affirmations: <span
-        className={`font-bold text-2xl ${getCountColor(count)}`}>{count}</span>
-      </p>
+      <div className="flex items-center justify-center w-52 h-12 rounded-lg glass border border-white/20 text-black font-medium">
+        Available affirmations: <span className={`ml-1 font-semibold ${getCountColor(count)}`}>{count}</span>
+      </div>
     </div>
   );
 }

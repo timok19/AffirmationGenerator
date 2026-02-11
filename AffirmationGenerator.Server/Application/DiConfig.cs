@@ -1,4 +1,4 @@
-using AffirmationGenerator.Server.Application.Commands;
+using AffirmationGenerator.Server.Application.Queries;
 
 namespace AffirmationGenerator.Server.Application;
 
@@ -22,7 +22,8 @@ public static class DiConfig
                 options.Cookie.MaxAge = TimeSpan.FromDays(1);
             });
 
-            services.AddScoped<GenerateAffirmationCommand>();
+            services.AddScoped<GetAffirmationQuery>();
+            services.AddScoped<GetRemainingAffirmationsQuery>();
             return services;
         }
     }

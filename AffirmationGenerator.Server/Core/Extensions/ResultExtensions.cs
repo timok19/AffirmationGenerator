@@ -2,6 +2,8 @@ namespace AffirmationGenerator.Server.Core.Extensions;
 
 public static class ResultExtensions
 {
+    public static T GetOrDefault<T>(this Result<T> result, T defaultValue) => result.Match(success => success, _ => defaultValue);
+
     extension<TIn>(Task<Result<TIn>> result)
     {
         public async Task<TOut> Match<TOut>(Func<TIn, TOut> mapSuccess, Func<ErrorDetails, TOut> mapError) =>
@@ -66,6 +68,12 @@ public static class ResultExtensions
             await result.Match(async value => await map(value), Result<TOut>.Error);
 
         public Result<TOut> Bind<TOut>(Func<TIn, Result<TOut>> map) => result.Match(map, Result<TOut>.Error);
+
+        public async Task<Result<TOut>> SelectMany<TInner, TOut>(Func<TIn, Task<Result<TInner>>> bind, Func<TIn, TInner, TOut> project) =>
+            await result.Match(
+                async outer => await bind(outer).Match(inner => Result<TOut>.Success(project(outer, inner)), Result<TOut>.Error),
+                Result<TOut>.Error
+            );
     }
 
     extension<T>(Task<Result<T>> result)
@@ -74,8 +82,6 @@ public static class ResultExtensions
 
         public async Task<T> GetOrDefault(Func<T> defaultValue) => await result.Match(success => success, _ => defaultValue());
     }
-
-    public static T GetOrDefault<T>(this Result<T> result, T defaultValue) => result.Match(success => success, _ => defaultValue);
 
     extension<TOuter>(Task<Result<TOuter>> result)
     {

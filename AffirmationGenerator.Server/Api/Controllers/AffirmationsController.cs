@@ -1,8 +1,8 @@
 using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Api.RateLimiting;
-using AffirmationGenerator.Server.Application.Commands;
 using AffirmationGenerator.Server.Application.Models;
+using AffirmationGenerator.Server.Application.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -10,7 +10,8 @@ namespace AffirmationGenerator.Server.Api.Controllers;
 
 [ApiController]
 [Route("affirmations")]
-public class AffirmationsController(GenerateAffirmationCommand generateAffirmationCommand) : ControllerBase
+public class AffirmationsController(GetAffirmationQuery getAffirmationQuery, GetRemainingAffirmationsQuery getRemainingAffirmationsQuery)
+    : ControllerBase
 {
     [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
@@ -18,6 +19,10 @@ public class AffirmationsController(GenerateAffirmationCommand generateAffirmati
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<AffirmationResponse>> Generate([FromQuery] GenerateAffirmationRequest request) =>
-        await generateAffirmationCommand.Handle(request).ToActionResult();
+    public async Task<ActionResult<AffirmationResponse>> Get([FromQuery] GenerateAffirmationRequest request) =>
+        await getAffirmationQuery.Handle(request).ToActionResult();
+
+    [HttpGet("remaining")]
+    [ProducesResponseType<RemainingAffirmationsResponse>(StatusCodes.Status200OK)]
+    public ActionResult<RemainingAffirmationsResponse> GetRemaining() => getRemainingAffirmationsQuery.Handle().ToActionResult();
 }

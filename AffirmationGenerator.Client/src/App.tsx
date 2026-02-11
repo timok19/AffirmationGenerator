@@ -6,6 +6,7 @@ import RemainingAffirmationsText from "./components/RemainingAffirmationsText.ts
 import AffirmationResponse from './models/affirmationResponse.ts';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import RemainingAffirmationsResponse from "./models/remainingAffirmationsResponse.ts";
 
 function App() {
   const totalAffirmations = 5;
@@ -16,15 +17,27 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedLanguageCode, setSelectedLanguageCode] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const isTyping = displayedText.length < affirmationText.length;
+  const isInteractionDisabled = isFetching || isTyping;
 
   async function handleLanguageChange(code: string) {
+    if (isInteractionDisabled) return;
+    
     setSelectedLanguageCode(code);
-    await generateAffirmation(code);
+    
+    setIsFetching(true);
+    
+    await getAffirmation(code);
+    
+    setIsFetching(false);
   }
 
-  async function generateAffirmation(languageCode: string) {
+  async function getAffirmation(languageCode: string) {
     try {
       setErrorMessage('');
+      
       const response = await axios.get<AffirmationResponse>(
         '/affirmations',
         {
@@ -34,9 +47,13 @@ function App() {
         });
 
       setAffirmationText(response.data.affirmation);
+      
       setDisplayedText('');
+      
       setRemainingAffirmations(response.data.remaining);
+      
       setIsAnimating(true);
+      
       setTimeout(() => setIsAnimating(false), 500);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 429) {
@@ -47,6 +64,21 @@ function App() {
       setErrorMessage('Unable to generate affirmation right now ☹️');
     }
   }
+  
+  async function getRemainingAffirmations() {
+    try {
+      const response = await axios.get<RemainingAffirmationsResponse>('/affirmations/remaining');
+      
+      setRemainingAffirmations(response.data.remainingAffirmations);
+      
+    } catch (error) {
+      console.error('Failed to fetch remaining affirmations');
+    }
+  }
+  
+  useEffect(() => {
+    getRemainingAffirmations();
+  }, []);
 
   useEffect(() => {
     if (displayedText.length < affirmationText.length) {
@@ -67,7 +99,7 @@ function App() {
           <RemainingAffirmationsText count={remainingAffirmations}/>
 
           <div className="absolute bottom-8 right-8">
-            <AffirmationLanguagesDropdown value={selectedLanguageCode} onChange={handleLanguageChange}/>
+            <AffirmationLanguagesDropdown value={selectedLanguageCode} onChange={handleLanguageChange} disabled={isInteractionDisabled}/>
           </div>
         </div>
 

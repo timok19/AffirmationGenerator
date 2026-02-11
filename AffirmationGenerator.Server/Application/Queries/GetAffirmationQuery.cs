@@ -8,12 +8,12 @@ using AffirmationGenerator.Server.Infrastructure.Affirmation;
 using AffirmationGenerator.Server.Infrastructure.DeepL;
 using DeepL;
 
-namespace AffirmationGenerator.Server.Application.Commands;
+namespace AffirmationGenerator.Server.Application.Queries;
 
-public sealed class GenerateAffirmationCommand(
+public sealed class GetAffirmationQuery(
     IAffirmationClient affirmationClient,
     IDeepLTranslatorClient translatorClient,
-    ILogger<GenerateAffirmationCommand> logger,
+    ILogger<GetAffirmationQuery> logger,
     IHttpContextAccessor httpContextAccessor
 )
 {
@@ -22,10 +22,20 @@ public sealed class GenerateAffirmationCommand(
 
     public async Task<Result<AffirmationResponse>> Handle(GenerateAffirmationRequest request) =>
         await
-            from affirmation in GetAffirmation()
             from targetLanguageCode in MapLanguageCode(request.AffirmationLanguageCode)
+            from affirmation in GetAffirmation()
             from translatedAffirmation in Translate(targetLanguageCode, affirmation)
             select ToResponse(targetLanguageCode, translatedAffirmation);
+
+    private static Result<string> MapLanguageCode(string affirmationLanguageCode) =>
+        affirmationLanguageCode switch
+        {
+            AffirmationLanguage.English => LanguageCode.English,
+            AffirmationLanguage.German => LanguageCode.German,
+            AffirmationLanguage.Czech => LanguageCode.Czech,
+            AffirmationLanguage.French => LanguageCode.French,
+            _ => Result<string>.Error(new InvalidLanguageCode(affirmationLanguageCode)),
+        };
 
     private async Task<Result<string>> GetAffirmation()
     {
@@ -44,16 +54,6 @@ public sealed class GenerateAffirmationCommand(
 
         return affirmation;
     }
-
-    private static Result<string> MapLanguageCode(string affirmationLanguageCode) =>
-        affirmationLanguageCode switch
-        {
-            AffirmationLanguage.English => LanguageCode.English,
-            AffirmationLanguage.German => LanguageCode.German,
-            AffirmationLanguage.Czech => LanguageCode.Czech,
-            AffirmationLanguage.French => LanguageCode.French,
-            _ => Result<string>.Error(new InvalidLanguageCode(affirmationLanguageCode)),
-        };
 
     private async Task<Result<string>> Translate(string targetLanguageCode, string affirmation)
     {
