@@ -1,6 +1,7 @@
 using System.Threading.RateLimiting;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Api.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace AffirmationGenerator.Server.Api;
 
@@ -11,7 +12,16 @@ public static class DiConfig
         public IServiceCollection AddApi()
         {
             services.AddControllers();
+
             services.AddOpenApi();
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownIPNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             services.AddRateLimiter(rateLimiterOptions =>
             {
                 rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

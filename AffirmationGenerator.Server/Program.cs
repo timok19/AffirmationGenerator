@@ -1,10 +1,10 @@
 using AffirmationGenerator.Server.Api;
 using AffirmationGenerator.Server.Application;
 using AffirmationGenerator.Server.Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddApi().AddApplication().AddInfrastructure(builder.Configuration);
 
 // Configure the HTTP request pipeline.
@@ -19,6 +19,8 @@ if (app.Environment.IsProduction() == false)
 app.UseDefaultFiles();
 
 app.UseStaticFiles();
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 
