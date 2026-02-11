@@ -3,9 +3,9 @@ import AffirmationLanguagesDropdown from "./components/AffirmationLanguagesDropd
 import AffirmationErrorMessage from "./components/AffirmationErrorMessage.tsx";
 import AffirmationText from "./components/AffirmationText.tsx";
 import RemainingAffirmationsText from "./components/RemainingAffirmationsText.tsx";
-import AffirmationResponse from './models/affirmationResponse.ts';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import AffirmationResponse from './models/affirmationResponse.ts';
 import RemainingAffirmationsResponse from "./models/remainingAffirmationsResponse.ts";
 
 function App() {

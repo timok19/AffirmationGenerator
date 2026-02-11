@@ -10,7 +10,7 @@
         <LangVersion>14</LangVersion>
         <UserSecretsId>be1c0c03-0fa4-404e-a054-faa9197ab580</UserSecretsId>
     </PropertyGroup>
-    <ItemGroup>
+    <ItemGroup Condition="'$(SkipClientBuild)' != 'true'">
         <ProjectReference Include="..\AffirmationGenerator.Client\AffirmationGenerator.Client.esproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
         </ProjectReference>
