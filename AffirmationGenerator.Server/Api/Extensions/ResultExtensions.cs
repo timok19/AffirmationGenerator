@@ -21,6 +21,19 @@ public static class ResultExtensions
             };
     }
 
+    extension<T>(Result<T> result)
+    {
+        public ActionResult<T> ToActionResult() =>
+            result switch
+            {
+                Error<T> { Details: AffirmationNotFound } error => new NotFoundObjectResult(error.ToErrorResponse()),
+                Error<T> { Details: TranslationError } error => error.ToObjectResult(HttpStatusCode.InternalServerError),
+                Error<T> error => new BadRequestObjectResult(error.ToErrorResponse()),
+                Success<T> success => typeof(T) == typeof(Unit) ? new OkResult() : new OkObjectResult(success.Value),
+                _ => throw new ArgumentOutOfRangeException(nameof(result)),
+            };
+    }
+
     extension<T>(Error<T> error)
     {
         private ObjectResult ToObjectResult(HttpStatusCode statusCode) => new(error.ToErrorResponse()) { StatusCode = (int)statusCode };
