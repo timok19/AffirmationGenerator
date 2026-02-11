@@ -3,6 +3,7 @@ import AffirmationLanguagesDropdown from "./components/AffirmationLanguagesDropd
 import AffirmationErrorMessage from "./components/AffirmationErrorMessage.tsx";
 import AffirmationText from "./components/AffirmationText.tsx";
 import RemainingAffirmationsText from "./components/RemainingAffirmationsText.tsx";
+import Footer from "./components/Footer.tsx";
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 import AffirmationResponse from './models/affirmationResponse.ts';
@@ -90,21 +91,25 @@ function App() {
   }, [displayedText, affirmationText]);
 
   return (
-    <div className="animated-bg min-h-screen flex flex-col items-center justify-center p-4 font-sans text-gray-800">
-      <div className="relative max-w-4xl w-full flex flex-col items-center">
+    <div className="animated-bg min-h-screen flex flex-col items-center justify-between p-4 font-sans text-gray-800">
+      <div className="flex-grow flex flex-col items-center justify-center w-full max-w-4xl relative">
         <div
-          className={`glass w-full min-h-150 p-12 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative z-10 ${isAnimating ? 'animate-pop-shake' : ''}`}>
-          <AffirmationText text={displayedText}/>
+          className={`glass w-full min-h-[600px] px-6 pt-6 pb-40 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative z-10 ${isAnimating ? 'animate-pop-shake' : ''}`}>
+          <AffirmationText text={displayedText} totalLength={affirmationText.length}/>
 
-          <RemainingAffirmationsText count={remainingAffirmations}/>
+          <RemainingAffirmationsText
+            count={remainingAffirmations}
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 md:bottom-8 md:left-8 md:translate-x-0"
+          />
 
-          <div className="absolute bottom-8 right-8">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:bottom-8 md:right-8 md:left-auto md:translate-x-0">
             <AffirmationLanguagesDropdown value={selectedLanguageCode} onChange={handleLanguageChange} disabled={isInteractionDisabled}/>
           </div>
         </div>
 
         <AffirmationErrorMessage message={errorMessage}/>
       </div>
+      <Footer className="mt-8"/>
     </div>
   );
 }
