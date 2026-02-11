@@ -6,7 +6,6 @@ WORKDIR /source
 RUN corepack enable
 COPY AffirmationGenerator.Client/package.json AffirmationGenerator.Client/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
-RUN pnpm approve-builds
 COPY AffirmationGenerator.Client/ ./
 RUN pnpm run build
 
