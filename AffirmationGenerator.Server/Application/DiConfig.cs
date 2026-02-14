@@ -24,6 +24,8 @@ public static class DiConfig
 
             services.AddScoped<GetAffirmationQuery>();
             services.AddScoped<GetRemainingAffirmationsQuery>();
+            services.AddScoped<GetAffirmationLanguagesQuery>();
+
             return services;
         }
     }

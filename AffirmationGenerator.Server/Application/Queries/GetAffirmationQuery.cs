@@ -20,7 +20,7 @@ public sealed class GetAffirmationQuery(
     private ISession Session =>
         httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException($"{nameof(HttpContext)} is missing!");
 
-    public async Task<Result<AffirmationResponse>> Handle(GenerateAffirmationRequest request) =>
+    public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await
             from targetLanguageCode in MapLanguageCode(request.AffirmationLanguageCode)
             from affirmation in GetAffirmation()

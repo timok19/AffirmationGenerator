@@ -1,24 +1,13 @@
 import {useRef} from 'react';
 
-interface AffirmationLanguageOption {
-  code: string;
-  label: string;
-}
-
-const affirmationLanguages: AffirmationLanguageOption[] = [
-  {code: 'en', label: 'English'},
-  {code: 'cs', label: 'Czech'},
-  {code: 'de', label: 'German'},
-  {code: 'fr', label: 'French'}
-];
-
 type LanguageDropdownProps = {
   value: string;
   onChange: (languageCode: string) => void;
   disabled?: boolean;
+  languages: AffirmationLanguageOption[];
 };
 
-function AffirmationLanguagesDropdown({value, onChange, disabled}: LanguageDropdownProps) {
+function AffirmationLanguagesDropdown({value, onChange, disabled, languages}: LanguageDropdownProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   const handleSelect = (code: string) => {
@@ -29,7 +18,7 @@ function AffirmationLanguagesDropdown({value, onChange, disabled}: LanguageDropd
     }
   };
 
-  const selectedLabel = affirmationLanguages.find(language => language.code === value)?.label || "Choose language";
+  const selectedLabel = languages.find(language => language.code === value)?.label || "Choose language";
 
   return (
     <details
@@ -44,8 +33,9 @@ function AffirmationLanguagesDropdown({value, onChange, disabled}: LanguageDropd
                 clipRule="evenodd"/>
         </svg>
       </summary>
+
       <ul className="dropdown-content z-1 menu p-2 shadow bg-neutral text-white w-48 rounded-box">
-        {affirmationLanguages.map(affirmationLanguage => (
+        {languages.map(affirmationLanguage => (
           <li key={affirmationLanguage.code}>
             <a
               onClick={() => handleSelect(affirmationLanguage.code)}
@@ -56,8 +46,14 @@ function AffirmationLanguagesDropdown({value, onChange, disabled}: LanguageDropd
           </li>
         ))}
       </ul>
+
     </details>
   );
+}
+
+export interface AffirmationLanguageOption {
+  code: string;
+  label: string;
 }
 
 export default AffirmationLanguagesDropdown;
