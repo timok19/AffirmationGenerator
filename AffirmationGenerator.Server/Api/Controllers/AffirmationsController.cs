@@ -10,8 +10,11 @@ namespace AffirmationGenerator.Server.Api.Controllers;
 
 [ApiController]
 [Route("affirmations")]
-public class AffirmationsController(GetAffirmationQuery getAffirmationQuery, GetRemainingAffirmationsQuery getRemainingAffirmationsQuery)
-    : ControllerBase
+public class AffirmationsController(
+    GetAffirmationQuery getAffirmationQuery,
+    GetRemainingAffirmationsQuery getRemainingAffirmationsQuery,
+    GetAffirmationLanguagesQuery getAffirmationLanguagesQuery
+) : ControllerBase
 {
     [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
@@ -19,10 +22,14 @@ public class AffirmationsController(GetAffirmationQuery getAffirmationQuery, Get
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ErrorResponse>(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<AffirmationResponse>> Get([FromQuery] GenerateAffirmationRequest request) =>
+    public async Task<ActionResult<AffirmationResponse>> GetAffirmation([FromQuery] GetAffirmationRequest request) =>
         await getAffirmationQuery.Handle(request).ToActionResult();
 
     [HttpGet("remaining")]
     [ProducesResponseType<RemainingAffirmationsResponse>(StatusCodes.Status200OK)]
     public ActionResult<RemainingAffirmationsResponse> GetRemaining() => getRemainingAffirmationsQuery.Handle().ToActionResult();
+
+    [HttpGet("languages")]
+    [ProducesResponseType<AffirmationLanguagesResponse>(StatusCodes.Status200OK)]
+    public ActionResult<AffirmationLanguagesResponse> GetLanguages() => getAffirmationLanguagesQuery.Handle().ToActionResult();
 }
