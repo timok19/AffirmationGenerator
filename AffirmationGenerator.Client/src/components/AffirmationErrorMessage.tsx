@@ -3,7 +3,8 @@ type ErrorMessageProps = {
 };
 
 function AffirmationErrorMessage({message}: ErrorMessageProps) {
-  if (!message) return null;
+  if (!message) 
+    return null;
 
   return (
     <div className="relative mt-4 w-full flex justify-center animate-slide-down z-0">
@@ -13,6 +14,5 @@ function AffirmationErrorMessage({message}: ErrorMessageProps) {
     </div>
   );
 }
-
 
 export default AffirmationErrorMessage;
