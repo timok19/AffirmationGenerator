@@ -1,5 +1,10 @@
 import {useRef} from 'react';
 
+export interface AffirmationLanguageOption {
+  code: string;
+  label: string;
+}
+
 type LanguageDropdownProps = {
   value: string;
   onChange: (languageCode: string) => void;
@@ -10,13 +15,13 @@ type LanguageDropdownProps = {
 function AffirmationLanguagesDropdown({value, onChange, disabled, languages}: LanguageDropdownProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
-  const handleSelect = (code: string) => {
+  function handleSelect(code: string) {
     if (disabled) return;
     onChange(code);
     if (detailsRef.current) {
       detailsRef.current.removeAttribute('open');
     }
-  };
+  }
 
   const selectedLabel = languages.find(language => language.code === value)?.label || "Choose language";
 
@@ -49,11 +54,6 @@ function AffirmationLanguagesDropdown({value, onChange, disabled, languages}: La
 
     </details>
   );
-}
-
-export interface AffirmationLanguageOption {
-  code: string;
-  label: string;
 }
 
 export default AffirmationLanguagesDropdown;

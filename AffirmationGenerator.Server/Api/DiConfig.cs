@@ -12,9 +12,30 @@ public static class DiConfig
         public IServiceCollection AddApi()
         {
             services.AddControllers();
-
+            services.AddSession();
             services.AddOpenApi();
+            services.ConfigureForwardedHeaders();
+            services.AddRateLimiting();
 
+            return services;
+        }
+
+        private IServiceCollection AddSession() =>
+            services
+                .AddDistributedMemoryCache()
+                .AddSession(options =>
+                {
+                    options.IdleTimeout = TimeSpan.FromDays(1);
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.Cookie.Name = nameof(ISession);
+                    options.Cookie.Path = "/";
+                    options.Cookie.MaxAge = TimeSpan.FromDays(1);
+                });
+
+        private IServiceCollection ConfigureForwardedHeaders() =>
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -22,6 +43,7 @@ public static class DiConfig
                 options.KnownProxies.Clear();
             });
 
+        private IServiceCollection AddRateLimiting() =>
             services.AddRateLimiter(rateLimiterOptions =>
             {
                 rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -45,14 +67,9 @@ public static class DiConfig
                             {
                                 Window = TimeSpan.FromDays(1),
                                 PermitLimit = RateLimitingConstants.MaxRequestsPerDay,
-                                QueueLimit = 0,
-                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             }
                         )
                 );
             });
-
-            return services;
-        }
     }
 }

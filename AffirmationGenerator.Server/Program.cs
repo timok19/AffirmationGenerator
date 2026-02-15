@@ -1,7 +1,6 @@
 using AffirmationGenerator.Server.Api;
 using AffirmationGenerator.Server.Application;
 using AffirmationGenerator.Server.Infrastructure;
-using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
