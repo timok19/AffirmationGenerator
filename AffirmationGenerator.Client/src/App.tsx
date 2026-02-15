@@ -29,14 +29,16 @@ function App() {
 
     axios
       .get<AffirmationLanguagesResponse>('/affirmations/languages')
-      .then(response => Object.entries(response.data.languages).map(([code, label]) => ({code, label})))
+      .then(response => response.data.languages)
+      .then(languages => Object.entries(languages).map(([code, label]) => ({code, label})))
       .then(setLanguages)
       .catch(() => console.error('Failed to fetch languages'));
   }, []);
 
   useEffect(() => {
     if (displayedText.length < affirmationText.length) {
-      const timeout = setTimeout(() => setDisplayedText(affirmationText.slice(0, displayedText.length + 1)), 50);
+      const text = affirmationText.slice(0, displayedText.length + 1);
+      const timeout = setTimeout(() => setDisplayedText(text), 50);
       return () => clearTimeout(timeout);
     }
   }, [displayedText, affirmationText]);
@@ -44,47 +46,34 @@ function App() {
   const isTyping = displayedText.length < affirmationText.length;
   const isInteractionDisabled = isFetching || isTyping;
 
-  async function handleLanguageChange(code: string) {
-    if (isInteractionDisabled) return;
-
+  function handleLanguageChange(code: string) {
+    if (isInteractionDisabled)
+      return;
     setSelectedLanguageCode(code);
-
     setIsFetching(true);
-
-    await getAffirmation(code);
-
+    getAffirmation(code);
     setIsFetching(false);
   }
 
-  async function getAffirmation(languageCode: string) {
-    try {
-      setErrorMessage('');
-
-      const response = await axios.get<AffirmationResponse>(
-        '/affirmations',
-        {
-          params: {
-            affirmationLanguageCode: languageCode
-          }
-        });
-
-      setAffirmationText(response.data.affirmation);
-
-      setDisplayedText('');
-
-      setRemainingAffirmations(response.data.remaining);
-
-      setIsAnimating(true);
-
-      setTimeout(() => setIsAnimating(false), 500);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 429) {
-        setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
-        return;
-      }
-
-      setErrorMessage('Unable to generate affirmation right now ☹️');
-    }
+  function getAffirmation(languageCode: string) {
+    setErrorMessage('');
+    axios
+      .get<AffirmationResponse>('/affirmations', {params: {affirmationLanguageCode: languageCode}})
+      .then(response => response.data)
+      .then(data => {
+        setAffirmationText(data.affirmation);
+        setDisplayedText('');
+        setRemainingAffirmations(data.remaining);
+        setIsAnimating(true);
+        setTimeout(() => setIsAnimating(false), 500);
+      })
+      .catch(error => {
+        if (axios.isAxiosError(error) && error.response?.status === 429) {
+          setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
+          return;
+        }
+        setErrorMessage('Unable to generate affirmation right now ☹️');
+      });
   }
 
   return (
@@ -93,15 +82,15 @@ function App() {
         <div
           className={`glass w-full min-h-150 px-10 pt-6 pb-40 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative z-10 ${isAnimating ? 'animate-pop-shake' : ''}`}>
           <AffirmationText text={displayedText}/>
-
           <RemainingAffirmationsText count={remainingAffirmations}/>
-
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:bottom-8 md:right-8 md:left-auto md:translate-x-0">
-            <AffirmationLanguagesDropdown value={selectedLanguageCode} onChange={handleLanguageChange} disabled={isInteractionDisabled}
-                                          languages={languages}/>
+            <AffirmationLanguagesDropdown
+              value={selectedLanguageCode}
+              onChange={handleLanguageChange}
+              disabled={isInteractionDisabled}
+              languages={languages}/>
           </div>
         </div>
-
         <AffirmationErrorMessage message={errorMessage}/>
       </div>
       <Footer/>
