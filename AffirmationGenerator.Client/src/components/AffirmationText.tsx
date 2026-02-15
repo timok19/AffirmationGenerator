@@ -1,8 +1,9 @@
 type DisplayedTextProps = {
   text: string;
+  isLoading?: boolean;
 };
 
-function AffirmationText({text}: DisplayedTextProps) {
+function AffirmationText({text, isLoading}: DisplayedTextProps) {
   function getTextSizeClass() {
     let textSizeClass = "text-4xl md:text-8xl";
 
@@ -19,7 +20,7 @@ function AffirmationText({text}: DisplayedTextProps) {
     return textSizeClass;
   }
 
-  return (
+  return isLoading ? (<span className="loading loading-ring w-48"></span>) : (
     <h1 className={`${getTextSizeClass()} font-bold typing-cursor text-center wrap-break-word transition-all duration-300 px-5`}>
       {text}
     </h1>

@@ -3,6 +3,7 @@ import AffirmationLanguagesDropdown, {AffirmationLanguageOption} from "./compone
 import AffirmationErrorMessage from "./components/AffirmationErrorMessage.tsx";
 import AffirmationText from "./components/AffirmationText.tsx";
 import RemainingAffirmationsText from "./components/RemainingAffirmationsText.tsx";
+import MainCard from "./components/MainCard.tsx";
 import Footer from "./components/Footer.tsx";
 import {useEffect, useState} from 'react';
 import axios from 'axios';
@@ -16,7 +17,7 @@ function App() {
   const [displayedText, setDisplayedText] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedLanguageCode, setSelectedLanguageCode] = useState('');
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [languages, setLanguages] = useState<AffirmationLanguageOption[]>([]);
 
@@ -50,13 +51,12 @@ function App() {
     if (isInteractionDisabled)
       return;
     setSelectedLanguageCode(code);
-    setIsFetching(true);
     getAffirmation(code);
-    setIsFetching(false);
   }
 
   function getAffirmation(languageCode: string) {
     setErrorMessage('');
+    setIsFetching(true);
     axios
       .get<AffirmationResponse>('/affirmations', {params: {affirmationLanguageCode: languageCode}})
       .then(response => response.data)
@@ -64,35 +64,29 @@ function App() {
         setAffirmationText(data.affirmation);
         setDisplayedText('');
         setRemainingAffirmations(data.remaining);
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 500);
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
       })
       .catch(error => {
-        if (axios.isAxiosError(error) && error.response?.status === 429) {
+        if (axios.isAxiosError(error) && error.response?.status === 429)
           setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
-          return;
-        }
-        setErrorMessage('Unable to generate affirmation right now ☹️');
-      });
+        else
+          setErrorMessage('Unable to generate affirmation right now ☹️');
+      })
+      .finally(() => setIsFetching(false));
   }
 
   return (
     <div className="animated-bg min-h-screen flex flex-col items-center justify-between p-4 font-sans text-gray-800">
-      <div className="grow flex flex-col items-center justify-center w-full max-w-4xl relative">
-        <div
-          className={`glass w-full min-h-150 px-10 pt-6 pb-40 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center justify-center relative z-10 ${isAnimating ? 'animate-pop-shake' : ''}`}>
-          <AffirmationText text={displayedText}/>
-          <RemainingAffirmationsText count={remainingAffirmations}/>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:bottom-8 md:right-8 md:left-auto md:translate-x-0">
-            <AffirmationLanguagesDropdown
-              value={selectedLanguageCode}
-              onChange={handleLanguageChange}
-              disabled={isInteractionDisabled}
-              languages={languages}/>
-          </div>
-        </div>
-        <AffirmationErrorMessage message={errorMessage}/>
-      </div>
+      <MainCard isShaking={isShaking} error={<AffirmationErrorMessage message={errorMessage}/>}>
+        <AffirmationText text={displayedText} isLoading={isFetching}/>
+        <RemainingAffirmationsText count={remainingAffirmations}/>
+        <AffirmationLanguagesDropdown
+          value={selectedLanguageCode}
+          onChange={handleLanguageChange}
+          disabled={isInteractionDisabled}
+          languages={languages}/>
+      </MainCard>
       <Footer/>
     </div>
   );
