@@ -25,7 +25,11 @@ function App() {
     axios
       .get<RemainingAffirmationsResponse>('/affirmations/remaining')
       .then(response => response.data.remainingAffirmations)
-      .then(setRemainingAffirmations)
+      .then(count => {
+        setRemainingAffirmations(count);
+        if (count === 0) 
+          setMaxAmountOfAffirmationsErrorMessage();
+      })
       .catch(() => console.error('Failed to fetch remaining affirmations'));
 
     axios
@@ -45,15 +49,12 @@ function App() {
   }, [displayedText, affirmationText]);
 
   const isTyping = displayedText.length < affirmationText.length;
-  const isInteractionDisabled = isFetching || isTyping;
-
-  function handleLanguageChange(code: string) {
-    if (isInteractionDisabled)
-      return;
-    setSelectedLanguageCode(code);
-    getAffirmation(code);
+  const isInteractionDisabled = isFetching || isTyping || remainingAffirmations === 0;
+  
+  function setMaxAmountOfAffirmationsErrorMessage() {
+    setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
   }
-
+  
   function getAffirmation(languageCode: string) {
     setErrorMessage('');
     setIsFetching(true);
@@ -64,16 +65,25 @@ function App() {
         setAffirmationText(data.affirmation);
         setDisplayedText('');
         setRemainingAffirmations(data.remaining);
+        if (data.remaining === 0) 
+          setMaxAmountOfAffirmationsErrorMessage();
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 500);
       })
       .catch(error => {
         if (axios.isAxiosError(error) && error.response?.status === 429)
-          setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
+          setMaxAmountOfAffirmationsErrorMessage();
         else
           setErrorMessage('Unable to generate affirmation right now ☹️');
       })
       .finally(() => setIsFetching(false));
+  }
+
+  function handleLanguageChange(languageCode: string) {
+    if (isInteractionDisabled)
+      return;
+    setSelectedLanguageCode(languageCode);
+    getAffirmation(languageCode);
   }
 
   return (
