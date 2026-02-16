@@ -3,7 +3,51 @@
 ## 1. Application Info
 The Affirmation Generator is a web application designed to provide users with positive, uplifting affirmations in multiple languages to boost morale and mental well-being. It features a daily limit on affirmation generation to encourage mindful consumption and prevents overuse through rate limiting.
 
-## 2. Architecture
+## 2. Getting Started
+
+### Prerequisites
+*   [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+*   [Node.js](https://nodejs.org/) (LTS recommended)
+*   [pnpm](https://pnpm.io/) package manager
+*   [Docker](https://www.docker.com/) (optional, for containerized run)
+
+### Running Locally
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/timok19/AffirmationGenerator.git
+    cd AffirmationGenerator
+    ```
+
+2.  **Configuration:**
+    Ensure you have the required API keys. For local development, use [.NET User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid committing sensitive data:
+    ```bash
+    cd AffirmationGenerator.Server
+    dotnet user-secrets init
+    dotnet user-secrets set "Infrastructure:DeepLTranslatorClientOptions:ApiKey" "DEEPL_API_KEY"
+    dotnet user-secrets set "Infrastructure:AffirmationClientOptions:BaseUrl" "https://www.affirmations.dev"
+    ```
+    Alternatively, update `appsettings.json`.
+
+3.  **Start the Application:**
+    Navigate to the server directory and run:
+    ```bash
+    dotnet run
+    ```
+    This will start the ASP.NET Core backend and automatically launch the React frontend via the configured SPA proxy.
+    The application will be available at: `https://localhost:7006` (or `http://localhost:5095`).
+
+### Running with Docker
+1.  **Build the image:**
+    ```bash
+    docker build -t affirmation-generator .
+    ```
+2.  **Run the container:**
+    ```bash
+    docker run -p 8080:8080 -e Infrastructure__DeepLTranslatorClientOptions__ApiKey="DEEPL_API_KEY" -e Infrastructure__AffirmationClientOptions__BaseUrl="https://www.affirmations.dev" affirmation-generator
+    ```
+    Access the application at: `http://localhost:8080`
+
+## 3. Architecture
 
 ### System-Level Architecture
 The application is built using a **Client-Server** model packaged into a single Docker container for easy deployment.
@@ -27,7 +71,7 @@ The frontend is a **React** application built with **Vite**.
 *   **API Communication:** Uses `Axios` to communicate with the backend endpoints (`/affirmations`, `/affirmations/remaining`).
 *   **Styling:** Utilizes **Tailwind CSS v4** and **DaisyUI v5** for responsive and modern UI components.
 
-## 3. Configuration
+## 4. Configuration
 To configure the application, you need to set up the following settings in `appsettings.json` or via Environment Variables (recommended for production):
 
 **Required Configuration:**
@@ -47,27 +91,19 @@ To configure the application, you need to set up the following settings in `apps
 *   **`Infrastructure:DeepLTranslatorClientOptions:ApiKey`**: The API Key for the DeepL translation service.
 *   **`Infrastructure:AffirmationClientOptions:BaseUrl`**: The base URL for the external affirmation provider service.
 
-## 4. React Components & Libraries
+## 5. React Components & Libraries
 
 ### Libraries Used
-*   **React 18:** Core UI library.
+*   **React 19:** Core UI library.
 *   **Vite:** Fast build tool and development server.
 *   **Tailwind CSS (v4):** Utility-first CSS framework.
 *   **DaisyUI (v5):** Component library for Tailwind CSS.
 *   **Axios:** Promise-based HTTP client for making API requests.
 *   **TypeScript:** Adds static typing to JavaScript for better developer experience and code quality.
 
-### Key Components
-The application logic is distributed among several reusable components located in `src/components`:
-
-*   **`AffirmationText.tsx`**: Responsible for rendering the affirmation text. It handles the visual presentation of the main content.
-*   **`AffirmationLanguagesDropdown.tsx`**: A dropdown component that allows users to select the target language for the affirmation. It triggers the generation process upon selection.
-*   **`RemainingAffirmationsText.tsx`**: Displays the counter for how many affirmations the user can still generate today.
-*   **`AffirmationErrorMessage.tsx`**: Renders error messages to the user, such as when the daily limit is reached or if the API is unavailable.
-*   **`Footer.tsx`**: A simple footer component for the application layout.
 
 
-## 5. Useful links
+## 6. Useful links
 
 *   [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet)
 *   [React](https://react.dev/)

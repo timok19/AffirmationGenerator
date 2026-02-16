@@ -12,7 +12,7 @@ function RemainingAffirmationsText({count}: RemainingAffirmationsTextProps) {
   return (
     <div
       className="flex items-center justify-center w-52 h-12 rounded-lg glass border border-white/20 text-black font-medium absolute bottom-20 left-1/2 -translate-x-1/2 md:bottom-8 md:left-8 md:translate-x-0">
-      Available affirmations: <span className={`ml-1 font-semibold ${getCountColor(count)}`}>{count}</span>
+      Remaining affirmations: <span className={`ml-1 font-semibold ${getCountColor(count)}`}>{count}</span>
     </div>
   );
 }
