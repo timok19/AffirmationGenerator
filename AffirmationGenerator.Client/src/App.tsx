@@ -84,8 +84,8 @@ function App() {
         <AffirmationLanguagesDropdown
           value={selectedLanguageCode}
           onChange={handleLanguageChange}
-          disabled={isInteractionDisabled}
-          languages={languages}/>
+          languages={languages}
+          disabled={isInteractionDisabled}/>
       </MainCard>
       <Footer/>
     </div>
