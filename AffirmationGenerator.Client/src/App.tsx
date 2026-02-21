@@ -1,5 +1,5 @@
 import './App.css';
-import AffirmationLanguagesDropdown, {AffirmationLanguageOption} from "./components/AffirmationLanguagesDropdown.tsx";
+import AffirmationLanguagesDropdown from "./components/AffirmationLanguagesDropdown.tsx";
 import AffirmationErrorMessage from "./components/AffirmationErrorMessage.tsx";
 import AffirmationText from "./components/AffirmationText.tsx";
 import RemainingAffirmationsText from "./components/RemainingAffirmationsText.tsx";
@@ -7,6 +7,7 @@ import MainCard from "./components/MainCard.tsx";
 import Footer from "./components/Footer.tsx";
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import AffirmationResponse from './models/affirmationResponse.ts';
 import RemainingAffirmationsResponse from "./models/remainingAffirmationsResponse.ts";
 import AffirmationLanguagesResponse from "./models/affirmationLanguagesResponse.ts";
@@ -19,26 +20,30 @@ function App() {
   const [selectedLanguageCode, setSelectedLanguageCode] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const [languages, setLanguages] = useState<AffirmationLanguageOption[]>([]);
+  
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    axios
-      .get<RemainingAffirmationsResponse>('/affirmations/remaining')
-      .then(response => response.data.remainingAffirmations)
-      .then(count => {
-        setRemainingAffirmations(count);
-        if (count === 0) 
-          setMaxAmountOfAffirmationsErrorMessage();
-      })
-      .catch(() => console.error('Failed to fetch remaining affirmations'));
-
-    axios
+  const {data: languages = []} = useQuery({
+    queryKey: ['languages'],
+    queryFn: () => axios
       .get<AffirmationLanguagesResponse>('/affirmations/languages')
       .then(response => response.data.languages)
       .then(languages => Object.entries(languages).map(([code, label]) => ({code, label})))
-      .then(setLanguages)
-      .catch(() => console.error('Failed to fetch languages'));
-  }, []);
+  });
+
+  const {data: remainingCount} = useQuery({
+    queryKey: ['remainingAffirmations'],
+    queryFn: () => axios
+      .get<RemainingAffirmationsResponse>('/affirmations/remaining')
+      .then(response => response.data.remainingAffirmations)
+  });
+
+  useEffect(() => {
+    if (remainingCount === undefined) return;
+    setRemainingAffirmations(remainingCount);
+    if (remainingCount !== 0) return;
+    setMaxAmountOfAffirmationsErrorMessage();
+  }, [remainingCount]);
 
   useEffect(() => {
     if (displayedText.length < affirmationText.length) {
@@ -65,6 +70,7 @@ function App() {
         setAffirmationText(data.affirmation);
         setDisplayedText('');
         setRemainingAffirmations(data.remaining);
+        queryClient.setQueryData(['remainingAffirmations'], data.remaining);
         if (data.remaining === 0) 
           setMaxAmountOfAffirmationsErrorMessage();
         setIsShaking(true);
