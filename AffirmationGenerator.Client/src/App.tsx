@@ -6,7 +6,7 @@ import RemainingAffirmationsText from "./components/RemainingAffirmationsText.ts
 import MainCard from "./components/MainCard.tsx";
 import Footer from "./components/Footer.tsx";
 import {useEffect, useState} from 'react';
-import axios from 'axios';
+import axios, {HttpStatusCode} from 'axios';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import AffirmationResponse from './models/affirmationResponse.ts';
 import RemainingAffirmationsResponse from "./models/remainingAffirmationsResponse.ts";
@@ -64,7 +64,7 @@ function App() {
     setErrorMessage('');
     setIsFetching(true);
     axios
-      .get<AffirmationResponse>('/affirmations', {params: {affirmationLanguageCode: languageCode}})
+      .get<AffirmationResponse>('/affirmations', {params: {languageCode: languageCode}})
       .then(response => response.data)
       .then(data => {
         setAffirmationText(data.affirmation);
@@ -77,7 +77,7 @@ function App() {
         setTimeout(() => setIsShaking(false), 500);
       })
       .catch(error => {
-        if (axios.isAxiosError(error) && error.response?.status === 429)
+        if (axios.isAxiosError(error) && error.response?.status === HttpStatusCode.TooManyRequests)
           setMaxAmountOfAffirmationsErrorMessage();
         else
           setErrorMessage('Unable to generate affirmation right now ☹️');

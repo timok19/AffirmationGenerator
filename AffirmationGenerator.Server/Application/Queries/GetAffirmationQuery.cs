@@ -21,20 +21,21 @@ public sealed class GetAffirmationQuery(
         httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException($"{nameof(HttpContext)} is missing!");
 
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
-        await
-            from targetLanguageCode in MapLanguageCode(request.AffirmationLanguageCode)
+        await (
+            from targetLanguageCode in MapLanguageCode(request.LanguageCode)
             from affirmation in GetAffirmation()
             from translatedAffirmation in Translate(targetLanguageCode, affirmation)
-            select ToResponse(targetLanguageCode, translatedAffirmation);
+            select ToResponse(targetLanguageCode, translatedAffirmation)
+        );
 
-    private static Result<string> MapLanguageCode(string affirmationLanguageCode) =>
-        affirmationLanguageCode switch
+    private static Result<string> MapLanguageCode(string languageCode) =>
+        languageCode switch
         {
             AffirmationLanguage.English => LanguageCode.English,
             AffirmationLanguage.German => LanguageCode.German,
             AffirmationLanguage.Czech => LanguageCode.Czech,
             AffirmationLanguage.French => LanguageCode.French,
-            _ => Result<string>.Error(new InvalidLanguageCode(affirmationLanguageCode)),
+            _ => Result<string>.Error(new InvalidLanguageCode(languageCode)),
         };
 
     private async Task<Result<string>> GetAffirmation()
@@ -52,7 +53,7 @@ public sealed class GetAffirmationQuery(
 
         SetRemainingAffirmations(remainingAffirmations);
 
-        return affirmation;
+        return Result<string>.Success(affirmation);
     }
 
     private async Task<Result<string>> Translate(string targetLanguageCode, string affirmation)
@@ -62,10 +63,9 @@ public sealed class GetAffirmationQuery(
 
         var translatedAffirmation = await translatorClient.Translate(affirmation, LanguageCode.English, targetLanguageCode);
 
-        if (string.IsNullOrWhiteSpace(translatedAffirmation))
-            return Result<string>.Error(new TranslationError());
-
-        return translatedAffirmation;
+        return string.IsNullOrWhiteSpace(translatedAffirmation) == false
+            ? Result<string>.Success(translatedAffirmation)
+            : Result<string>.Error(new TranslationError());
     }
 
     private AffirmationResponse ToResponse(string targetLanguageCode, string affirmation) =>
