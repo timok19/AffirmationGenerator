@@ -1,6 +1,7 @@
 import {useRef} from 'react';
+import ArrowDownIcon from "./ArrowDownIcon.tsx";
 
-export interface AffirmationLanguageOption {
+interface LanguageOption {
   code: string;
   label: string;
 }
@@ -9,10 +10,10 @@ type LanguageDropdownProps = {
   value: string;
   onChange: (languageCode: string) => void;
   disabled?: boolean;
-  languages: AffirmationLanguageOption[];
+  languages: LanguageOption[];
 };
 
-function AffirmationLanguagesDropdown({value, onChange, disabled, languages}: LanguageDropdownProps) {
+function LanguagesDropdown({value, onChange, disabled, languages}: LanguageDropdownProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   function handleSelect(code: string) {
@@ -31,26 +32,22 @@ function AffirmationLanguagesDropdown({value, onChange, disabled, languages}: La
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:bottom-8 md:right-8 md:left-auto md:translate-x-0">
       <details
         ref={detailsRef}
-        className={`dropdown dropdown-top dropdown-end ${disabled ? 'pointer-events-none opacity-50' : ''}`}
+        className={`group dropdown dropdown-top dropdown-center ${disabled ? 'pointer-events-none opacity-50' : ''}`}
       >
-        <summary className="btn w-48 justify-center border border-white/20 bg-neutral text-white hover:bg-neutral/80 flex-nowrap">
+        <summary className="btn w-56 h-12 rounded-lg flex justify-center border border-white/20 bg-neutral text-white text-lg hover:bg-neutral/80 flex-nowrap">
           {selectedLabel}
-          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <path fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"/>
-          </svg>
+          <ArrowDownIcon/>
         </summary>
 
-        <ul className="dropdown-content z-1 menu p-2 shadow bg-neutral text-white w-48 rounded-box">
+        <ul className="menu dropdown-content z-1 p-1 shadow bg-neutral text-white text-lg w-56 rounded-box">
           {languages.map(affirmationLanguage => (
             <li key={affirmationLanguage.code}>
-              <a
+              <button
                 onClick={() => handleSelect(affirmationLanguage.code)}
-                className={`${value === affirmationLanguage.code ? 'active' : ''} justify-center text-white`}
+                className={`${value === affirmationLanguage.code ? 'active' : ''} justify-center flex h-10 text-white m-1`}
               >
                 {affirmationLanguage.label}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -59,4 +56,4 @@ function AffirmationLanguagesDropdown({value, onChange, disabled, languages}: La
   );
 }
 
-export default AffirmationLanguagesDropdown;
+export default LanguagesDropdown;
