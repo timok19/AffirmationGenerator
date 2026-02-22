@@ -1,6 +1,5 @@
 using AffirmationGenerator.Server.Api;
 using AffirmationGenerator.Server.Api.Extensions;
-using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Core;
 using AffirmationGenerator.Server.Core.Extensions;
@@ -22,7 +21,9 @@ public sealed class GetAffirmationQuery(
     IMemoryCache memoryCache
 )
 {
-    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(apiOptions.Value.ClientIpHeaderName);
+    private ApiOptions ApiOptions => apiOptions.Value;
+
+    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(ApiOptions.ClientIpHeaderName);
 
     private string CacheKey => $"{ClientIpAddress}";
 
@@ -83,7 +84,7 @@ public sealed class GetAffirmationQuery(
             entry =>
             {
                 entry.SetAbsoluteExpiration(TimeSpan.FromDays(1));
-                return Task.FromResult(RateLimitingConstants.MaxRequestsPerIpPerDay);
+                return Task.FromResult(ApiOptions.MaxRequestsPerDay);
             }
         );
 
