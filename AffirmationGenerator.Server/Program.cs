@@ -23,8 +23,6 @@ app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 
-app.UseSession();
-
 app.UseRateLimiter();
 
 app.MapControllers();

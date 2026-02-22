@@ -1,4 +1,3 @@
-using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Core;
@@ -7,6 +6,7 @@ using AffirmationGenerator.Server.Domain;
 using AffirmationGenerator.Server.Infrastructure.Affirmation;
 using AffirmationGenerator.Server.Infrastructure.DeepL;
 using DeepL;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AffirmationGenerator.Server.Application.Queries;
 
@@ -14,11 +14,13 @@ public sealed class GetAffirmationQuery(
     IAffirmationClient affirmationClient,
     IDeepLTranslatorClient translatorClient,
     ILogger<GetAffirmationQuery> logger,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IMemoryCache memoryCache
 )
 {
-    private ISession Session =>
-        httpContextAccessor.HttpContext?.Session ?? throw new NullReferenceException($"{nameof(HttpContext)} is missing!");
+    private string? UserIpAddress => httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
+    private string CacheKey => $"{UserIpAddress}";
 
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await (
@@ -40,7 +42,7 @@ public sealed class GetAffirmationQuery(
 
     private async Task<Result<string>> GetAffirmation()
     {
-        var remainingAffirmations = GetRemainingAffirmations();
+        var remainingAffirmations = await GetRemainingAffirmations();
 
         var affirmationResponse = await affirmationClient.GetAffirmation();
         var affirmation = affirmationResponse.Affirmation ?? string.Empty;
@@ -68,10 +70,18 @@ public sealed class GetAffirmationQuery(
             : Result<string>.Error(new TranslationError());
     }
 
-    private AffirmationResponse ToResponse(string targetLanguageCode, string affirmation) =>
-        new(targetLanguageCode, affirmation, GetRemainingAffirmations());
+    private async Task<AffirmationResponse> ToResponse(string targetLanguageCode, string affirmation) =>
+        new(targetLanguageCode, affirmation, await GetRemainingAffirmations());
 
-    private int GetRemainingAffirmations() => Session.GetInt32(Session.RemainingRequestsKey) ?? RateLimitingConstants.MaxRequestsPerDay;
+    private async Task<int> GetRemainingAffirmations() =>
+        await memoryCache.GetOrCreateAsync(
+            CacheKey,
+            entry =>
+            {
+                entry.SetAbsoluteExpiration(TimeSpan.FromDays(1));
+                return Task.FromResult(RateLimitingConstants.MaxRequestsPerIpPerDay);
+            }
+        );
 
     private void SetRemainingAffirmations(int remainingAffirmations)
     {
@@ -83,6 +93,8 @@ public sealed class GetAffirmationQuery(
         if (remainingAffirmations <= 0)
             remainingAffirmations = 0;
 
-        Session.SetInt32(Session.RemainingRequestsKey, remainingAffirmations);
+        logger.LogInformation("{RemainingAffirmations} affirmations remain for user {UserIpAddress}", remainingAffirmations, UserIpAddress);
+
+        memoryCache.Set(CacheKey, remainingAffirmations, TimeSpan.FromDays(1));
     }
 }
