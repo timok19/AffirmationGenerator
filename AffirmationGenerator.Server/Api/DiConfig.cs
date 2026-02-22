@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Api.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AffirmationGenerator.Server.Api;
 
@@ -12,28 +13,12 @@ public static class DiConfig
         public IServiceCollection AddApi()
         {
             services.AddControllers();
-            services.AddSession();
             services.AddOpenApi();
             services.ConfigureForwardedHeaders();
             services.AddRateLimiting();
 
             return services;
         }
-
-        private IServiceCollection AddSession() =>
-            services
-                .AddDistributedMemoryCache()
-                .AddSession(options =>
-                {
-                    options.IdleTimeout = TimeSpan.FromDays(1);
-                    options.Cookie.HttpOnly = true;
-                    options.Cookie.IsEssential = true;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.Name = nameof(ISession);
-                    options.Cookie.Path = "/";
-                    options.Cookie.MaxAge = TimeSpan.FromDays(1);
-                });
 
         private IServiceCollection ConfigureForwardedHeaders() =>
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -47,29 +32,31 @@ public static class DiConfig
             services.AddRateLimiter(rateLimiterOptions =>
             {
                 rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                rateLimiterOptions.OnRejected = async (context, token) =>
-                {
-                    if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-                    {
-                        context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
-
-                        var messageDetails = $"Too many requests. Please try again after {retryAfter.TotalSeconds} seconds.";
-
-                        await context.HttpContext.Response.WriteAsJsonAsync(new ErrorResponse { Details = messageDetails }, token);
-                    }
-                };
+                rateLimiterOptions.OnRejected = OnRejected;
                 rateLimiterOptions.AddPolicy(
                     RateLimitingPolicies.Fixed,
                     httpContext =>
                         RateLimitPartition.GetFixedWindowLimiter(
-                            httpContext.Session.Id,
+                            httpContext.Connection.RemoteIpAddress?.ToString(),
                             _ => new FixedWindowRateLimiterOptions
                             {
                                 Window = TimeSpan.FromDays(1),
-                                PermitLimit = RateLimitingConstants.MaxRequestsPerDay,
+                                PermitLimit = RateLimitingConstants.MaxRequestsPerIpPerDay,
                             }
                         )
                 );
             });
+    }
+
+    private static async ValueTask OnRejected(OnRejectedContext context, CancellationToken token)
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
+
+            var errorDetails = $"Too many requests. Please try again after {retryAfter.TotalSeconds} seconds.";
+
+            await context.HttpContext.Response.WriteAsJsonAsync(new ErrorResponse { Details = errorDetails }, token);
+        }
     }
 }

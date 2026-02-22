@@ -9,6 +9,7 @@ public static class DiConfig
         public IServiceCollection AddApplication()
         {
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
 
             services.AddScoped<GetAffirmationQuery>();
             services.AddScoped<GetRemainingAffirmationsQuery>();

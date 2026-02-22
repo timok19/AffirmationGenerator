@@ -27,7 +27,8 @@ public class AffirmationsController(
 
     [HttpGet("remaining")]
     [ProducesResponseType<RemainingAffirmationsResponse>(StatusCodes.Status200OK)]
-    public ActionResult<RemainingAffirmationsResponse> GetRemaining() => getRemainingAffirmationsQuery.Handle().ToActionResult();
+    public async Task<ActionResult<RemainingAffirmationsResponse>> GetRemaining() =>
+        await getRemainingAffirmationsQuery.Handle().ToActionResult();
 
     [HttpGet("languages")]
     [ProducesResponseType<AffirmationLanguagesResponse>(StatusCodes.Status200OK)]
