@@ -1,3 +1,4 @@
+using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Core;
@@ -7,6 +8,7 @@ using AffirmationGenerator.Server.Infrastructure.Affirmation;
 using AffirmationGenerator.Server.Infrastructure.DeepL;
 using DeepL;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace AffirmationGenerator.Server.Application.Queries;
 
@@ -15,12 +17,14 @@ public sealed class GetAffirmationQuery(
     IDeepLTranslatorClient translatorClient,
     ILogger<GetAffirmationQuery> logger,
     IHttpContextAccessor httpContextAccessor,
+    IOptions<ServerOptions> httpContextOptions,
     IMemoryCache memoryCache
 )
 {
-    private string? UserIpAddress => httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+    private string? ClientIpAddress =>
+        httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(httpContextOptions.Value.ClientIpHeaderName);
 
-    private string CacheKey => $"{UserIpAddress}";
+    private string CacheKey => $"{ClientIpAddress}";
 
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await (
@@ -93,7 +97,7 @@ public sealed class GetAffirmationQuery(
         if (remainingAffirmations <= 0)
             remainingAffirmations = 0;
 
-        logger.LogInformation("{RemainingAffirmations} affirmations remain for user {UserIpAddress}", remainingAffirmations, UserIpAddress);
+        logger.LogInformation("{Remaining} affirmations remain for user {ClientIpAddress}", remainingAffirmations, ClientIpAddress);
 
         memoryCache.Set(CacheKey, remainingAffirmations, TimeSpan.FromDays(1));
     }

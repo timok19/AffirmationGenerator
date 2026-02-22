@@ -1,8 +1,9 @@
 using System.Threading.RateLimiting;
+using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Api.RateLimiting;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace AffirmationGenerator.Server.Api;
 
@@ -14,18 +15,10 @@ public static class DiConfig
         {
             services.AddControllers();
             services.AddOpenApi();
-            services.ConfigureForwardedHeaders();
             services.AddRateLimiting();
 
             return services;
         }
-
-        private IServiceCollection ConfigureForwardedHeaders() =>
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                options.KnownProxies.Clear();
-            });
 
         private IServiceCollection AddRateLimiting() =>
             services.AddRateLimiter(rateLimiterOptions =>
@@ -35,14 +28,22 @@ public static class DiConfig
                 rateLimiterOptions.AddPolicy(
                     RateLimitingPolicies.Fixed,
                     httpContext =>
-                        RateLimitPartition.GetFixedWindowLimiter(
-                            httpContext.Connection.RemoteIpAddress?.ToString(),
+                    {
+                        var clientIpHeaderName = httpContext
+                            .RequestServices.GetRequiredService<IOptions<ServerOptions>>()
+                            .Value.ClientIpHeaderName;
+
+                        var clientIp = httpContext.GetClientIpFromHeaderOrDefault(clientIpHeaderName);
+
+                        return RateLimitPartition.GetFixedWindowLimiter(
+                            clientIp,
                             _ => new FixedWindowRateLimiterOptions
                             {
                                 Window = TimeSpan.FromDays(1),
                                 PermitLimit = RateLimitingConstants.MaxRequestsPerIpPerDay,
                             }
-                        )
+                        );
+                    }
                 );
             });
     }
