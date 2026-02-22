@@ -1,3 +1,4 @@
+using AffirmationGenerator.Server.Api;
 using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
@@ -17,12 +18,11 @@ public sealed class GetAffirmationQuery(
     IDeepLTranslatorClient translatorClient,
     ILogger<GetAffirmationQuery> logger,
     IHttpContextAccessor httpContextAccessor,
-    IOptions<ServerOptions> httpContextOptions,
+    IOptions<ApiOptions> apiOptions,
     IMemoryCache memoryCache
 )
 {
-    private string? ClientIpAddress =>
-        httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(httpContextOptions.Value.ClientIpHeaderName);
+    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(apiOptions.Value.ClientIpHeaderName);
 
     private string CacheKey => $"{ClientIpAddress}";
 

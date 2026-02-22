@@ -1,3 +1,4 @@
+using AffirmationGenerator.Server.Api;
 using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.RateLimiting;
 using AffirmationGenerator.Server.Application.Models;
@@ -11,11 +12,10 @@ public sealed class GetRemainingAffirmationsQuery(
     IHttpContextAccessor httpContextAccessor,
     IMemoryCache memoryCache,
     ILogger<GetRemainingAffirmationsQuery> logger,
-    IOptions<ServerOptions> httpContextOptions
+    IOptions<ApiOptions> apiOptions
 )
 {
-    private string? ClientIpAddress =>
-        httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(httpContextOptions.Value.ClientIpHeaderName);
+    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(apiOptions.Value.ClientIpHeaderName);
 
     private string CacheKey => $"{ClientIpAddress}";
 
