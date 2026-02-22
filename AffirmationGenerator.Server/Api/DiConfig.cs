@@ -11,8 +11,10 @@ public static class DiConfig
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddApi()
+        public IServiceCollection AddApi(IConfiguration configuration)
         {
+            services.Configure<ApiOptions>(configuration.GetSection(nameof(ApiOptions)));
+
             services.AddControllers();
             services.AddOpenApi();
             services.AddRateLimiting();
@@ -30,7 +32,7 @@ public static class DiConfig
                     httpContext =>
                     {
                         var clientIpHeaderName = httpContext
-                            .RequestServices.GetRequiredService<IOptions<ServerOptions>>()
+                            .RequestServices.GetRequiredService<IOptions<ApiOptions>>()
                             .Value.ClientIpHeaderName;
 
                         var clientIp = httpContext.GetClientIpFromHeaderOrDefault(clientIpHeaderName);

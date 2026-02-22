@@ -1,13 +1,10 @@
-using AffirmationGenerator.Server;
 using AffirmationGenerator.Server.Api;
 using AffirmationGenerator.Server.Application;
 using AffirmationGenerator.Server.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<ServerOptions>(builder.Configuration.GetSection(nameof(ServerOptions)));
-
-builder.Services.AddApi().AddApplication().AddInfrastructure(builder.Configuration);
+builder.Services.AddApi(builder.Configuration).AddApplication().AddInfrastructure(builder.Configuration);
 
 // Configure the HTTP request pipeline.
 var app = builder.Build();
