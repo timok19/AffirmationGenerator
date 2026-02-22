@@ -2,7 +2,7 @@ type ErrorMessageProps = {
   message: string;
 };
 
-function AffirmationErrorMessage({message}: ErrorMessageProps) {
+function ErrorMessage({message}: ErrorMessageProps) {
   if (!message) 
     return null;
 
@@ -15,4 +15,4 @@ function AffirmationErrorMessage({message}: ErrorMessageProps) {
   );
 }
 
-export default AffirmationErrorMessage;
+export default ErrorMessage;

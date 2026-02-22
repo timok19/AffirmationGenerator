@@ -1,10 +1,10 @@
 import './App.css';
-import AffirmationLanguagesDropdown from "./components/AffirmationLanguagesDropdown.tsx";
-import AffirmationErrorMessage from "./components/AffirmationErrorMessage.tsx";
-import AffirmationText from "./components/AffirmationText.tsx";
-import RemainingAffirmationsText from "./components/RemainingAffirmationsText.tsx";
+import LanguagesDropdown from "./components/Affirmation/LanguagesDropdown.tsx";
+import ErrorMessage from "./components/Affirmation/ErrorMessage.tsx";
+import MainText from "./components/Affirmation/MainText.tsx";
+import RemainingItemsText from "./components/Affirmation/RemainingItemsText.tsx";
 import MainCard from "./components/MainCard.tsx";
-import Footer from "./components/Footer.tsx";
+import Footer from "./components/Footer/Footer.tsx";
 import {useEffect, useState} from 'react';
 import axios, {HttpStatusCode} from 'axios';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
@@ -94,10 +94,10 @@ function App() {
 
   return (
     <div className="animated-bg min-h-screen flex flex-col items-center justify-between p-4 font-sans text-gray-800">
-      <MainCard isShaking={isShaking} error={<AffirmationErrorMessage message={errorMessage}/>}>
-        <AffirmationText text={displayedText} isLoading={isFetching}/>
-        <RemainingAffirmationsText count={remainingAffirmations}/>
-        <AffirmationLanguagesDropdown
+      <MainCard isShaking={isShaking} error={<ErrorMessage message={errorMessage}/>}>
+        <MainText text={displayedText} isLoading={isFetching}/>
+        <RemainingItemsText count={remainingAffirmations}/>
+        <LanguagesDropdown
           value={selectedLanguageCode}
           onChange={handleLanguageChange}
           languages={languages}
