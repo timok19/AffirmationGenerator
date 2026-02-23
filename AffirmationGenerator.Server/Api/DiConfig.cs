@@ -52,9 +52,11 @@ public static class DiConfig
     {
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
-            context.HttpContext.Response.Headers.RetryAfter = $"{retryAfter.TotalSeconds}";
+            var retryTime = (TimeProvider.System.GetUtcNow() + retryAfter).ToString("R");
 
-            var errorDetails = $"Too many requests. Please try again after {retryAfter.TotalSeconds} seconds.";
+            context.HttpContext.Response.Headers.RetryAfter = retryTime;
+
+            var errorDetails = $"Too many requests. Please try again after {retryTime}.";
 
             await context.HttpContext.Response.WriteAsJsonAsync(new ErrorResponse { Details = errorDetails }, token);
         }
