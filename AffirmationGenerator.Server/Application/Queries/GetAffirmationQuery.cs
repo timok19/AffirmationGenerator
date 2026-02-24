@@ -1,72 +1,32 @@
-using AffirmationGenerator.Server.Api;
-using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Application.Models;
+using AffirmationGenerator.Server.Application.Services.Affirmation;
+using AffirmationGenerator.Server.Application.Services.Language;
 using AffirmationGenerator.Server.Core;
 using AffirmationGenerator.Server.Core.Extensions;
 using AffirmationGenerator.Server.Domain;
-using AffirmationGenerator.Server.Infrastructure.Affirmation;
 using AffirmationGenerator.Server.Infrastructure.DeepL;
 using DeepL;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
 namespace AffirmationGenerator.Server.Application.Queries;
 
 public sealed class GetAffirmationQuery(
-    IAffirmationClient affirmationClient,
     IDeepLTranslatorClient translatorClient,
-    ILogger<GetAffirmationQuery> logger,
-    IHttpContextAccessor httpContextAccessor,
-    IOptions<ApiOptions> apiOptions,
-    IMemoryCache memoryCache
+    IAffirmationService affirmationService,
+    ILanguageCodeMapper<AffirmationLanguage> languageCodeMapper
 )
 {
-    private ApiOptions ApiOptions => apiOptions.Value;
-
-    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(ApiOptions.ClientIpHeaderName);
-
-    private string CacheKey => $"{ClientIpAddress}";
-
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await (
-            from targetLanguageCode in MapLanguageCode(request.LanguageCode)
-            from affirmation in GetAffirmation()
+            from targetLanguageCode in languageCodeMapper.Map(request.TargetLanguage)
+            from affirmation in affirmationService.Get()
             from translatedAffirmation in Translate(targetLanguageCode, affirmation)
-            select ToResponse(targetLanguageCode, translatedAffirmation)
+            select ToResponse(request.TargetLanguage, translatedAffirmation)
         );
-
-    private static Result<string> MapLanguageCode(string languageCode) =>
-        languageCode switch
-        {
-            AffirmationLanguage.English => LanguageCode.English,
-            AffirmationLanguage.German => LanguageCode.German,
-            AffirmationLanguage.Czech => LanguageCode.Czech,
-            AffirmationLanguage.French => LanguageCode.French,
-            _ => Result<string>.Error(new InvalidLanguageCode(languageCode)),
-        };
-
-    private async Task<Result<string>> GetAffirmation()
-    {
-        var remainingAffirmations = await GetRemainingAffirmations();
-
-        var affirmationResponse = await affirmationClient.GetAffirmation();
-        var affirmation = affirmationResponse.Affirmation ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(affirmation))
-        {
-            logger.LogError("Unable to get affirmation text");
-            return Result<string>.Error(new AffirmationNotFound());
-        }
-
-        SetRemainingAffirmations(remainingAffirmations);
-
-        return Result<string>.Success(affirmation);
-    }
 
     private async Task<Result<string>> Translate(string targetLanguageCode, string affirmation)
     {
         if (targetLanguageCode == LanguageCode.English)
-            return affirmation;
+            return Result<string>.Success(affirmation);
 
         var translatedAffirmation = await translatorClient.Translate(affirmation, LanguageCode.English, targetLanguageCode);
 
@@ -75,31 +35,11 @@ public sealed class GetAffirmationQuery(
             : Result<string>.Error(new TranslationError());
     }
 
-    private async Task<AffirmationResponse> ToResponse(string targetLanguageCode, string affirmation) =>
-        new(targetLanguageCode, affirmation, await GetRemainingAffirmations());
-
-    private async Task<int> GetRemainingAffirmations() =>
-        await memoryCache.GetOrCreateAsync(
-            CacheKey,
-            entry =>
-            {
-                entry.SetAbsoluteExpiration(TimeSpan.FromDays(1));
-                return Task.FromResult(ApiOptions.MaxRequestsPerDay);
-            }
-        );
-
-    private void SetRemainingAffirmations(int remainingAffirmations)
-    {
-        if (remainingAffirmations <= 0)
-            return;
-
-        remainingAffirmations -= 1;
-
-        if (remainingAffirmations <= 0)
-            remainingAffirmations = 0;
-
-        logger.LogInformation("{Remaining} affirmations remain for user {ClientIpAddress}", remainingAffirmations, ClientIpAddress);
-
-        memoryCache.Set(CacheKey, remainingAffirmations, TimeSpan.FromDays(1));
-    }
+    private async Task<AffirmationResponse> ToResponse(AffirmationLanguage targetLanguage, string affirmation) =>
+        new()
+        {
+            TargetLanguage = targetLanguage,
+            Text = affirmation,
+            RemainingCount = await affirmationService.Count(),
+        };
 }

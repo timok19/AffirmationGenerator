@@ -35,7 +35,7 @@ function App() {
     queryKey: ['remainingAffirmations'],
     queryFn: () => axios
       .get<RemainingAffirmationsResponse>('/affirmations/remaining')
-      .then(response => response.data.remainingAffirmations)
+      .then(response => response.data.remainingCount)
   });
 
   useEffect(() => {
@@ -60,18 +60,18 @@ function App() {
     setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
   }
   
-  function getAffirmation(languageCode: string) {
+  function getAffirmation(targetLanguage: string) {
     setErrorMessage('');
     setIsFetching(true);
     axios
-      .get<AffirmationResponse>('/affirmations', {params: {languageCode: languageCode}})
+      .get<AffirmationResponse>('/affirmations', {params: {targetLanguage: targetLanguage}})
       .then(response => response.data)
       .then(data => {
-        setAffirmationText(data.affirmation);
+        setAffirmationText(data.text);
         setDisplayedText('');
-        setRemainingAffirmations(data.remaining);
-        queryClient.setQueryData(['remainingAffirmations'], data.remaining);
-        if (data.remaining === 0) 
+        setRemainingAffirmations(data.remainingCount);
+        queryClient.setQueryData(['remainingAffirmations'], data.remainingCount);
+        if (data.remainingCount === 0) 
           setMaxAmountOfAffirmationsErrorMessage();
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 500);
@@ -85,11 +85,11 @@ function App() {
       .finally(() => setIsFetching(false));
   }
 
-  function handleLanguageChange(languageCode: string) {
+  function handleLanguageChange(targetLanguage: string) {
     if (isInteractionDisabled)
       return;
-    setSelectedLanguageCode(languageCode);
-    getAffirmation(languageCode);
+    setSelectedLanguageCode(targetLanguage);
+    getAffirmation(targetLanguage);
   }
 
   return (

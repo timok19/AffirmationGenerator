@@ -8,7 +8,7 @@ interface LanguageOption {
 
 type LanguageDropdownProps = {
   value: string;
-  onChange: (languageCode: string) => void;
+  onChange: (targetLanguage: string) => void;
   disabled?: boolean;
   languages: LanguageOption[];
 };

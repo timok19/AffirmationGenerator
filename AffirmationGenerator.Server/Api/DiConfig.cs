@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using AffirmationGenerator.Server.Api.Extensions;
 using AffirmationGenerator.Server.Api.Models;
 using AffirmationGenerator.Server.Api.RateLimiting;
+using AffirmationGenerator.Server.Application;
+using AffirmationGenerator.Server.Application.Extensions;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
@@ -11,13 +13,15 @@ public static class DiConfig
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddApi(IConfiguration configuration)
+        public IServiceCollection AddApi()
         {
-            services.Configure<ApiOptions>(configuration.GetSection(nameof(ApiOptions)));
-
             services.AddControllers();
             services.AddOpenApi();
             services.AddRateLimiting();
+            services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             return services;
         }
@@ -31,7 +35,7 @@ public static class DiConfig
                     RateLimitingPolicies.Fixed,
                     httpContext =>
                     {
-                        var apiOptions = httpContext.RequestServices.GetRequiredService<IOptions<ApiOptions>>().Value;
+                        var apiOptions = httpContext.RequestServices.GetRequiredService<IOptions<ClientOptions>>().Value;
 
                         var clientIp = httpContext.GetClientIpFromHeaderOrDefault(apiOptions.ClientIpHeaderName);
 

@@ -1,6 +1,6 @@
-namespace AffirmationGenerator.Server.Api;
+namespace AffirmationGenerator.Server.Application;
 
-public sealed record ApiOptions
+public sealed record ClientOptions
 {
     public required string ClientIpHeaderName { get; init; }
 

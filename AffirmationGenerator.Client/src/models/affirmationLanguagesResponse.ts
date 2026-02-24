@@ -1,5 +1,5 @@
 type AffirmationLanguagesResponse = {
-  languages: Record<string, string>
+  languages: Array<string>
 }
 
 export default AffirmationLanguagesResponse;

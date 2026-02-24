@@ -3,5 +3,6 @@
         <Build />
         <Deploy />
     </Project>
+    <Project Path="AffirmationGenerator.Server.Tests/AffirmationGenerator.Server.Tests.csproj" />
     <Project Path="AffirmationGenerator.Server/AffirmationGenerator.Server.csproj" />
 </Solution>
