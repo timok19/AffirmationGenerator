@@ -1,12 +1,11 @@
 # Test workflow for pull requests
 
-name: Test
+name: Run Tests
 on:
   pull_request:
     branches: [main]
 jobs:
   test:
-    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

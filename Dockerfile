@@ -10,7 +10,7 @@ COPY AffirmationGenerator.Client/ ./
 RUN pnpm run build
 
 # Stage 2: Build .NET Backend
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-dotnet
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build-dotnet
 ENV HUSKY=0
 WORKDIR /src
 # Copy project files first to cache restore
@@ -24,7 +24,7 @@ WORKDIR /src/AffirmationGenerator.Server
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false /p:SkipClientBuild=true
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
 EXPOSE 8080
 
