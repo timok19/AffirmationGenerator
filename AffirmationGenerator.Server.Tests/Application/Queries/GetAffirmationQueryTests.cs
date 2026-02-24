@@ -53,10 +53,11 @@ public sealed class GetAffirmationQueryTests : TestBase
         var response = result.ShouldBeSuccess();
 
         response.TargetLanguage.ShouldBe(AffirmationLanguage.English);
-        response.Text.ShouldBeEquivalentTo(affirmationText);
+        response.Text.ShouldBe(affirmationText);
         response.RemainingCount.ShouldBeLessThan(_apiOptions.Value.MaxRequestsPerDay);
 
         await _affirmationService.Received(1).Get();
+        _languageCodeMapper.Received(1).Map(AffirmationLanguage.English);
         await _translatorClient.DidNotReceiveWithAnyArgs().Translate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -85,6 +86,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         response.RemainingCount.ShouldBeLessThan(_apiOptions.Value.MaxRequestsPerDay);
 
         await _affirmationService.Received(1).Get();
+        _languageCodeMapper.Received(1).Map(AffirmationLanguage.German);
         await _translatorClient.Received(1).Translate(affirmationText, LanguageCode.English, LanguageCode.German);
     }
 
@@ -94,8 +96,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         // Arrange
         _affirmationService.Get().Returns(Result<string>.Error(new AffirmationNotFound()));
 
-        var getAffirmationRequest = new GetAffirmationRequest { TargetLanguage = AffirmationLanguage.French };
-        _languageCodeMapper.Map(getAffirmationRequest.TargetLanguage).Returns(LanguageCode.French);
+        var getAffirmationRequest = new GetAffirmationRequest { TargetLanguage = AffirmationLanguage.German };
 
         // Act
         var result = await _query.Handle(getAffirmationRequest);
@@ -104,6 +105,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         result.ShouldBeError().ShouldBeOfType<AffirmationNotFound>();
 
         await _affirmationService.Received(1).Get();
+        _languageCodeMapper.DidNotReceiveWithAnyArgs().Map(Arg.Any<AffirmationLanguage>());
         await _translatorClient.DidNotReceiveWithAnyArgs().Translate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 }
