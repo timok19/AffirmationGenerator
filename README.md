@@ -1,3 +1,6 @@
+![Tests](https://github.com/timok19/AffirmationGenerator/actions/workflows/tests.yml/badge.svg)
+![Fly Deploy](https://github.com/timok19/AffirmationGenerator/actions/workflows/fly-deploy.yml/badge.svg)
+
 # Affirmation Generator
 
 ## 1. Application Info
