@@ -80,21 +80,42 @@ To configure the application, you need to set up the following settings in `apps
 **Required Configuration:**
 ```json
 {
-  "Infrastructure": {
-    "DeepLTranslatorClientOptions": {
-      "ApiKey": "YOUR_DEEPL_API_KEY"
-    },
-    "AffirmationClientOptions": {
-      "BaseUrl": "URL_TO_AFFIRMATION_SERVICE"
+    "Application": {
+        "ClientOptions": {
+            "ClientIpHeaderName": "",  // Optional
+            "MaxRequestsPerDay": 10
+        }
     }
-  }
+    "Infrastructure": {
+        "DeepLTranslatorClientOptions": {
+            "ApiKey": "YOUR_DEEPL_API_KEY"
+        },
+        "AffirmationClientOptions": {
+            "BaseUrl": "https://www.affirmations.dev"
+        }
+    }
 }
 ```
 
+*   **`Application:ClientOptions:ClientIpHeaderName`**: Optional. Specifies the HTTP header containing the client IP (e.g., `X-Forwarded-For` behind proxies/load balancers like Fly.io). If empty (default), uses the direct `RemoteIpAddress` from the TCP connection, suitable for local development and non-proxied environments.
+*   **`Application:ClientOptions:MaxRequestsPerDay`**: Maximum number of affirmations per client IP per day (default: 10).
 *   **`Infrastructure:DeepLTranslatorClientOptions:ApiKey`**: The API Key for the DeepL translation service.
 *   **`Infrastructure:AffirmationClientOptions:BaseUrl`**: The base URL for the external affirmation provider service.
 
-## 5. React Components & Libraries
+## 5. API Endpoints
+
+The API provides the following endpoints (Swagger UI available at `/swagger`):
+
+- **`GET /affirmations?targetLanguage={language}`**
+  Returns `{ text: string, remainingCount: int }`. Fetches an English affirmation, translates to `targetLanguage` (enum value e.g. `1` = German, or name `German`). Rate-limited (10/day per IP).
+
+- **`GET /affirmations/remaining`**
+  Returns `{ remainingCount: int }`.
+
+- **`GET /affirmations/languages`**
+  Returns sorted `["English", "German", "Czech", "French"]`.
+
+## 6. React Components & Libraries
 
 ### Libraries Used
 *   **React 19:** Core UI library.
@@ -102,11 +123,23 @@ To configure the application, you need to set up the following settings in `apps
 *   **Tailwind CSS (v4):** Utility-first CSS framework.
 *   **DaisyUI (v5):** Component library for Tailwind CSS.
 *   **Axios:** Promise-based HTTP client for making API requests.
+*   **@tanstack/react-query (v5):** Data fetching, caching, and synchronization.
 *   **TypeScript:** Adds static typing to JavaScript for better developer experience and code quality.
 
+## 7. CI/CD
 
+### GitHub Actions Workflows
+- **tests.yml**: Triggers on `pull_request` targeting `main`. Runs `dotnet restore`, `build`, `test` on `AffirmationGenerator.slnx`.
+- **fly-deploy.yml**: Triggers on `push` to `main`. Runs tests, then deploys to Fly.io using `flyctl deploy`.
 
-## 6. Useful links
+## 8. Unit Tests
+
+Run with: 
+```shell
+dotnet test AffirmationGenerator.slnx --no-build --verbosity normal
+```
+
+## 9. Useful links
 
 *   [ASP.NET Core](https://dotnet.microsoft.com/apps/aspnet)
 *   [React](https://react.dev/)
@@ -117,3 +150,4 @@ To configure the application, you need to set up the following settings in `apps
 *   [TypeScript](https://www.typescriptlang.org/)
 *   [Docker](https://www.docker.com/)
 *   [DeepL API](https://www.deepl.com/pro-api)
+*   [Fly.io](https://fly.io/)
