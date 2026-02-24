@@ -17,11 +17,11 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - name: Restore dependencies
-        run: dotnet restore AffirmationGenerator.sln
+        run: dotnet restore AffirmationGenerator.slnx
       - name: Build
-        run: dotnet build AffirmationGenerator.sln --no-restore
+        run: dotnet build AffirmationGenerator.slnx --no-restore
       - name: Test
-        run: dotnet test AffirmationGenerator.sln --no-build --verbosity normal
+        run: dotnet test AffirmationGenerator.slnx --no-build --verbosity normal
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
