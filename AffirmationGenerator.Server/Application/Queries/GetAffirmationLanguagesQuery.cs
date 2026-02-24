@@ -8,15 +8,9 @@ public sealed class GetAffirmationLanguagesQuery
 {
     public Result<AffirmationLanguagesResponse> Handle() => ToResponse(GetLanguages());
 
-    private static Dictionary<string, string> GetLanguages() =>
-        new()
-        {
-            { AffirmationLanguage.English, nameof(AffirmationLanguage.English) },
-            { AffirmationLanguage.German, nameof(AffirmationLanguage.German) },
-            { AffirmationLanguage.Czech, nameof(AffirmationLanguage.Czech) },
-            { AffirmationLanguage.French, nameof(AffirmationLanguage.French) },
-        };
+    private static Dictionary<AffirmationLanguage, string> GetLanguages() =>
+        Enum.GetValues<AffirmationLanguage>().ToDictionary(language => language, language => language.ToString());
 
-    private static AffirmationLanguagesResponse ToResponse(IReadOnlyDictionary<string, string> languages) =>
-        new() { Languages = languages.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value) };
+    private static AffirmationLanguagesResponse ToResponse(Dictionary<AffirmationLanguage, string> languages) =>
+        new() { Languages = languages };
 }

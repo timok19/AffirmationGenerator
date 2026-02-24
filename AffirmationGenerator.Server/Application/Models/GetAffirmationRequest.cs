@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using AffirmationGenerator.Server.Domain;
 
 namespace AffirmationGenerator.Server.Application.Models;
@@ -7,12 +8,13 @@ public sealed record GetAffirmationRequest
 {
     [Description(
         $"""
-            Available language codes: 
-            {AffirmationLanguage.English} ({nameof(AffirmationLanguage.English)}), 
-            {AffirmationLanguage.German} ({nameof(AffirmationLanguage.German)}), 
-            {AffirmationLanguage.Czech} ({nameof(AffirmationLanguage.Czech)}), 
-            {AffirmationLanguage.French} ({nameof(AffirmationLanguage.French)}) 
+            Available language:
+            {nameof(AffirmationLanguage.English)} = 0,
+            {nameof(AffirmationLanguage.German)} = 1,
+            {nameof(AffirmationLanguage.Czech)} = 2,
+            {nameof(AffirmationLanguage.French)} = 3
             """
     )]
-    public required string LanguageCode { get; init; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public required AffirmationLanguage TargetLanguage { get; init; }
 }

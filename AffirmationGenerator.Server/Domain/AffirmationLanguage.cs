@@ -1,9 +1,9 @@
 namespace AffirmationGenerator.Server.Domain;
 
-public static class AffirmationLanguage
+public enum AffirmationLanguage
 {
-    public const string English = "en";
-    public const string German = "de";
-    public const string Czech = "cs";
-    public const string French = "fr";
+    English = 0,
+    German = 1,
+    Czech = 2,
+    French = 3,
 }

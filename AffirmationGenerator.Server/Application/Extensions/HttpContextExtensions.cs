@@ -1,4 +1,4 @@
-namespace AffirmationGenerator.Server.Api.Extensions;
+namespace AffirmationGenerator.Server.Application.Extensions;
 
 public static class HttpContextExtensions
 {
