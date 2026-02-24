@@ -1,7 +1,7 @@
 type AffirmationResponse = {
-  targetLanguageCode: string;
-  affirmation: string;
-  remaining: number;
+  targetLanguage: string;
+  text: string;
+  remainingCount: number;
 }
 
 export default AffirmationResponse;

@@ -20,7 +20,6 @@ public sealed class GetAffirmationLanguagesQueryTests : TestBase
         var languages = result.ShouldBeSuccess().Languages;
 
         languages.Count.ShouldBeGreaterThan(0);
-        languages.Keys.ShouldBeInOrder(SortDirection.Ascending);
-        languages.ToList().ForEach(kvp => kvp.Value.ShouldBe(kvp.Key.ToString()));
+        languages.ShouldBeInOrder(SortDirection.Ascending);
     }
 }

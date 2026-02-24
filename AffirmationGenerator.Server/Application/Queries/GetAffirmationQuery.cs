@@ -40,6 +40,6 @@ public sealed class GetAffirmationQuery(
         {
             TargetLanguage = targetLanguage,
             Text = affirmation,
-            RemainingCount = await affirmationService.GetCount(),
+            RemainingCount = await affirmationService.Count(),
         };
 }

@@ -6,5 +6,5 @@ public interface IAffirmationService
 {
     Task<Result<string>> Get();
 
-    Task<int> GetCount();
+    Task<int> Count();
 }

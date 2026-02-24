@@ -3,13 +3,31 @@
 name: Fly Deploy
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore dependencies
+        run: dotnet restore AffirmationGenerator.sln
+      - name: Build
+        run: dotnet build AffirmationGenerator.sln --no-restore
+      - name: Test
+        run: dotnet test AffirmationGenerator.sln --no-build --verbosity normal
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
+    needs: test
     concurrency: deploy-group    # optional: ensure only one action runs at a time
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master

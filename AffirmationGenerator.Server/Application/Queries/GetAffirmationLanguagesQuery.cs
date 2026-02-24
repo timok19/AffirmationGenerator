@@ -8,9 +8,7 @@ public sealed class GetAffirmationLanguagesQuery
 {
     public Result<AffirmationLanguagesResponse> Handle() => ToResponse(GetLanguages());
 
-    private static Dictionary<AffirmationLanguage, string> GetLanguages() =>
-        Enum.GetValues<AffirmationLanguage>().ToDictionary(language => language, language => language.ToString());
+    private static List<AffirmationLanguage> GetLanguages() => Enum.GetValues<AffirmationLanguage>().ToList();
 
-    private static AffirmationLanguagesResponse ToResponse(Dictionary<AffirmationLanguage, string> languages) =>
-        new() { Languages = languages };
+    private static AffirmationLanguagesResponse ToResponse(List<AffirmationLanguage> languages) => new() { Languages = languages };
 }

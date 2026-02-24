@@ -25,7 +25,7 @@ public sealed class AffirmationService(
 
     public async Task<Result<string>> Get()
     {
-        var remainingAffirmations = await GetCount();
+        var remainingAffirmations = await Count();
 
         var affirmationResponse = await affirmationClient.GetAffirmation();
         var affirmation = affirmationResponse.Affirmation ?? string.Empty;
@@ -41,7 +41,7 @@ public sealed class AffirmationService(
         return Result<string>.Success(affirmation);
     }
 
-    public async Task<int> GetCount()
+    public async Task<int> Count()
     {
         var remainingCount = await memoryCache.GetOrCreateAsync(
             CacheKey,

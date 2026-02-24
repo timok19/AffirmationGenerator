@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace AffirmationGenerator.Server.Domain;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum AffirmationLanguage
 {
     English = 0,

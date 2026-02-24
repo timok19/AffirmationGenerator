@@ -24,15 +24,15 @@ public sealed class GetRemainingAffirmationsQueryTests : TestBase
     public async Task Handle_ShouldReturnRemainingAffirmationsCount()
     {
         // Arrange
-        _affirmationService.GetCount().Returns(10);
+        _affirmationService.Count().Returns(10);
 
         // Act
         var result = await _query.Handle();
 
         // Assert
         var response = result.ShouldBeSuccess();
-        response.RemainingAffirmations.ShouldBe(10);
+        response.RemainingCount.ShouldBe(10);
 
-        await _affirmationService.Received(1).GetCount();
+        await _affirmationService.Received(1).Count();
     }
 }
