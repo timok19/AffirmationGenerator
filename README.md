@@ -1,4 +1,4 @@
-![Tests](https://github.com/timok19/AffirmationGenerator/actions/workflows/tests.yml/badge.svg)
+![Build and Test](https://github.com/timok19/AffirmationGenerator/actions/workflows/build-test.yml/badge.svg)
 ![Fly Deploy](https://github.com/timok19/AffirmationGenerator/actions/workflows/fly-deploy.yml/badge.svg)
 
 # Affirmation Generator

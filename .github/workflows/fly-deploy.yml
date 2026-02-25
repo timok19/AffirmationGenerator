@@ -8,7 +8,6 @@ jobs:
   build-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    concurrency: build-test-group
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET SDK
@@ -24,7 +23,6 @@ jobs:
   deploy:
     name: Deploy App
     runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
