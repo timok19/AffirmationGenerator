@@ -20,18 +20,22 @@ public sealed class GetRemainingAffirmationsQueryTests : TestBase
         _query = new GetRemainingAffirmationsQuery(_affirmationService);
     }
 
-    [Test]
-    public async Task Handle_ShouldReturnRemainingAffirmationsCount()
+    [TestCase(255)]
+    [TestCase(100)]
+    [TestCase(10)]
+    [TestCase(0)]
+    public async Task Handle_ShouldReturnRemainingAffirmationsCount(int maxRequestsPerDay)
     {
         // Arrange
-        _affirmationService.Count().Returns(10);
+        _affirmationService.Count().Returns(maxRequestsPerDay);
 
         // Act
         var result = await _query.Handle();
 
         // Assert
         var response = result.ShouldBeSuccess();
-        response.RemainingCount.ShouldBe(10);
+        response.RemainingCount.ShouldBe(maxRequestsPerDay);
+        response.RemainingCount.ShouldBeGreaterThanOrEqualTo(0);
 
         await _affirmationService.Received(1).Count();
     }

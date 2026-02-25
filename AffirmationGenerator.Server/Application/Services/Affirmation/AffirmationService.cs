@@ -52,8 +52,8 @@ public sealed class AffirmationService(
             }
         );
 
-        if (logger.IsEnabled(LogLevel.Debug))
-            logger.LogDebug("{RemainingCount} affirmations remain for user {ClientIpAddress}", remainingCount, ClientIpAddress);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("{RemainingCount} affirmations remain for user {ClientIpAddress}", remainingCount, ClientIpAddress);
 
         return remainingCount;
     }
@@ -67,9 +67,6 @@ public sealed class AffirmationService(
 
         if (count <= 0)
             count = 0;
-
-        if (logger.IsEnabled(LogLevel.Debug))
-            logger.LogDebug("{RemainingCount} affirmations remain for user {ClientIpAddress}", count, ClientIpAddress);
 
         memoryCache.Set(CacheKey, count, OneDay);
     }
