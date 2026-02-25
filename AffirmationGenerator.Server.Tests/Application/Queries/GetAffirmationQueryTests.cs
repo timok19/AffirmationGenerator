@@ -1,4 +1,3 @@
-using AffirmationGenerator.Server.Application;
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Application.Queries;
 using AffirmationGenerator.Server.Application.Services.Affirmation;
@@ -8,7 +7,6 @@ using AffirmationGenerator.Server.Domain;
 using AffirmationGenerator.Server.Infrastructure.DeepL;
 using AffirmationGenerator.Server.Tests.Extensions;
 using DeepL;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
@@ -21,7 +19,6 @@ public sealed class GetAffirmationQueryTests : TestBase
     private IDeepLTranslatorClient _translatorClient = null!;
     private ILanguageCodeMapper<AffirmationLanguage> _languageCodeMapper = null!;
     private IAffirmationService _affirmationService = null!;
-    private IOptions<ClientOptions> _apiOptions = null!;
     private GetAffirmationQuery _query = null!;
 
     [SetUp]
@@ -30,7 +27,6 @@ public sealed class GetAffirmationQueryTests : TestBase
         _translatorClient = Substitute.For<IDeepLTranslatorClient>();
         _languageCodeMapper = Substitute.For<ILanguageCodeMapper<AffirmationLanguage>>();
         _affirmationService = Substitute.For<IAffirmationService>();
-        _apiOptions = Options.Create(new ClientOptions { ClientIpHeaderName = "X-Forwarded-For", MaxRequestsPerDay = 10 });
         _query = new GetAffirmationQuery(_translatorClient, _affirmationService, _languageCodeMapper);
     }
 
@@ -39,6 +35,7 @@ public sealed class GetAffirmationQueryTests : TestBase
     {
         // Arrange
         const string affirmationText = "Good day!";
+        const int maxRequestsPerDay = 10;
 
         _affirmationService.Get().Returns(affirmationText);
 
@@ -54,7 +51,7 @@ public sealed class GetAffirmationQueryTests : TestBase
 
         response.TargetLanguage.ShouldBe(AffirmationLanguage.English);
         response.Text.ShouldBe(affirmationText);
-        response.RemainingCount.ShouldBeLessThan(_apiOptions.Value.MaxRequestsPerDay);
+        response.RemainingCount.ShouldBeLessThan(maxRequestsPerDay);
 
         await _affirmationService.Received(1).Get();
         _languageCodeMapper.Received(1).Map(AffirmationLanguage.English);
@@ -67,6 +64,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         // Arrange
         const string affirmationText = "Good day!";
         const string affirmationTextInGerman = "Guten Tag!";
+        const int maxRequestsPerDay = 10;
 
         _affirmationService.Get().Returns(affirmationText);
 
@@ -83,7 +81,7 @@ public sealed class GetAffirmationQueryTests : TestBase
 
         response.TargetLanguage.ShouldBe(AffirmationLanguage.German);
         response.Text.ShouldBe(affirmationTextInGerman);
-        response.RemainingCount.ShouldBeLessThan(_apiOptions.Value.MaxRequestsPerDay);
+        response.RemainingCount.ShouldBeLessThan(maxRequestsPerDay);
 
         await _affirmationService.Received(1).Get();
         _languageCodeMapper.Received(1).Map(AffirmationLanguage.German);
