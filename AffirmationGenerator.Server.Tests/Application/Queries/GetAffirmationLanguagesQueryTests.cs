@@ -8,7 +8,13 @@ namespace AffirmationGenerator.Server.Tests.Application.Queries;
 [TestFixture]
 public sealed class GetAffirmationLanguagesQueryTests : TestBase
 {
-    private readonly GetAffirmationLanguagesQuery _query = new();
+    private GetAffirmationLanguagesQuery _query = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _query = new GetAffirmationLanguagesQuery();
+    }
 
     [Test]
     public void Handle_ShouldReturnSortedLanguages()

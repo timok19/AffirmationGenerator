@@ -17,13 +17,13 @@ public sealed class GetAffirmationQuery(
 {
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await (
-            from targetLanguageCode in languageCodeMapper.Map(request.TargetLanguage)
             from affirmation in affirmationService.Get()
-            from translatedAffirmation in Translate(targetLanguageCode, affirmation)
+            from targetLanguageCode in languageCodeMapper.Map(request.TargetLanguage)
+            from translatedAffirmation in Translate(affirmation, targetLanguageCode)
             select ToResponse(request.TargetLanguage, translatedAffirmation)
         );
 
-    private async Task<Result<string>> Translate(string targetLanguageCode, string affirmation)
+    private async Task<Result<string>> Translate(string affirmation, string targetLanguageCode)
     {
         if (targetLanguageCode == LanguageCode.English)
             return Result<string>.Success(affirmation);
