@@ -136,7 +136,7 @@ The API provides the following endpoints (Swagger UI available at `/swagger`):
 
 Run with: 
 ```shell
-dotnet test AffirmationGenerator.slnx --no-build --verbosity normal
+dotnet test
 ```
 
 ## 9. Useful links
