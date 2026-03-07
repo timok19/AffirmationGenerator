@@ -35,16 +35,16 @@ public static class DiConfig
                     RateLimitingPolicies.Fixed,
                     httpContext =>
                     {
-                        var apiOptions = httpContext.RequestServices.GetRequiredService<IOptions<ClientOptions>>().Value;
+                        var clientOptions = httpContext.RequestServices.GetRequiredService<IOptions<ClientOptions>>().Value;
 
-                        var clientIp = httpContext.GetClientIpFromHeaderOrDefault(apiOptions.ClientIpHeaderName);
+                        var clientIp = httpContext.GetClientIpAddress(clientOptions.ClientIpHeaderName);
 
                         return RateLimitPartition.GetFixedWindowLimiter(
                             clientIp,
                             _ => new FixedWindowRateLimiterOptions
                             {
                                 Window = TimeSpan.FromDays(1),
-                                PermitLimit = apiOptions.MaxRequestsPerDay,
+                                PermitLimit = clientOptions.MaxRequestsPerDay,
                             }
                         );
                     }

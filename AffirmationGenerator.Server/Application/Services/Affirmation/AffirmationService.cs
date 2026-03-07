@@ -17,7 +17,7 @@ public sealed class AffirmationService(
 {
     private ClientOptions ClientOptions => clientOptions.Value;
 
-    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpFromHeaderOrDefault(ClientOptions.ClientIpHeaderName);
+    private string? ClientIpAddress => httpContextAccessor.HttpContext?.GetClientIpAddress(ClientOptions.ClientIpHeaderName);
 
     private string CacheKey => $"{ClientIpAddress}";
 
