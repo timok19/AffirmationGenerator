@@ -13,18 +13,12 @@ public static class DiConfig
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddApi()
-        {
-            services.AddControllers();
-            services.AddOpenApi();
-            services.AddRateLimiting();
-            services.ConfigureHttpJsonOptions(options =>
-            {
-                options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
-
-            return services;
-        }
+        public IServiceCollection AddApi() =>
+            services
+                .AddControllers()
+                .Services.AddOpenApi()
+                .AddRateLimiting()
+                .ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         private IServiceCollection AddRateLimiting() =>
             services.AddRateLimiter(rateLimiterOptions =>
