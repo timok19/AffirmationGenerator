@@ -1,5 +1,5 @@
 type AffirmationLanguagesResponse = {
-  languages: Array<string>
-}
+  languages: Array<string>;
+};
 
 export default AffirmationLanguagesResponse;

@@ -6,6 +6,18 @@
       "command": "dotnet",
       "args": [ "csharpier", "format", "${staged}" ],
       "include": [ "**/*.cs" ]
+    },
+    {
+      "name": "Run eslint",
+      "cwd": "AffirmationGenerator.Client",
+      "command": "pnpm",
+      "args": [ "run", "lint" ],
+    },
+    {
+      "name": "Run prettier",
+      "cwd": "AffirmationGenerator.Client",
+      "command": "pnpm",
+      "args": [ "run", "format" ],
     }
   ]
 }

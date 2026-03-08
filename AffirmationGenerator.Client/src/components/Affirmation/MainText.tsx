@@ -3,7 +3,7 @@ type DisplayedTextProps = {
   isLoading?: boolean;
 };
 
-function MainText({text, isLoading}: DisplayedTextProps) {
+function MainText({ text, isLoading }: DisplayedTextProps) {
   function getTextSizeClass() {
     let textSizeClass = "text-4xl md:text-8xl";
 
@@ -20,12 +20,15 @@ function MainText({text, isLoading}: DisplayedTextProps) {
     return textSizeClass;
   }
 
-  return isLoading ? (<span className="loading loading-ring w-48"/>) : (
-    <h1 className={`${getTextSizeClass()} font-bold typing-cursor text-center wrap-break-word transition-all duration-300 px-5`}>
+  return isLoading ? (
+    <span className="loading loading-ring w-48" />
+  ) : (
+    <h1
+      className={`${getTextSizeClass()} font-bold typing-cursor text-center wrap-break-word transition-all duration-300 px-5`}
+    >
       {text}
     </h1>
   );
 }
-
 
 export default MainText;
