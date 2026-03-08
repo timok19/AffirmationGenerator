@@ -17,7 +17,7 @@ public sealed class GetAffirmationQuery(
 {
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await (
-            from affirmation in affirmationService.Get()
+            from affirmation in affirmationService.GetAffirmation()
             from targetLanguageCode in languageCodeMapper.Map(request.TargetLanguage)
             from translatedAffirmation in Translate(affirmation, targetLanguageCode)
             select ToResponse(request.TargetLanguage, translatedAffirmation)
@@ -40,6 +40,6 @@ public sealed class GetAffirmationQuery(
         {
             TargetLanguage = targetLanguage,
             Text = affirmation,
-            RemainingCount = await affirmationService.Count(),
+            RemainingCount = await affirmationService.GetRemainingAffirmationsCount(),
         };
 }

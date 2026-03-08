@@ -15,7 +15,6 @@ public static class DiConfig
             services.Configure<ClientOptions>(configurationSection.GetSection(nameof(ClientOptions)));
 
             services.AddHttpContextAccessor();
-            services.AddMemoryCache();
 
             services.AddScoped<GetAffirmationQuery>();
             services.AddScoped<GetRemainingAffirmationsQuery>();

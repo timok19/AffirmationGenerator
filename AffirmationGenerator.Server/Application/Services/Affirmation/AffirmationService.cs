@@ -1,8 +1,9 @@
 using AffirmationGenerator.Server.Application.Extensions;
 using AffirmationGenerator.Server.Core;
+using AffirmationGenerator.Server.Core.Extensions;
 using AffirmationGenerator.Server.Domain;
 using AffirmationGenerator.Server.Infrastructure.Affirmation;
-using Microsoft.Extensions.Caching.Memory;
+using AffirmationGenerator.Server.Infrastructure.Redis;
 using Microsoft.Extensions.Options;
 
 namespace AffirmationGenerator.Server.Application.Services.Affirmation;
@@ -10,7 +11,7 @@ namespace AffirmationGenerator.Server.Application.Services.Affirmation;
 public sealed class AffirmationService(
     ILogger<AffirmationService> logger,
     IAffirmationClient affirmationClient,
-    IMemoryCache memoryCache,
+    IRedisClient redisClient,
     IHttpContextAccessor httpContextAccessor,
     IOptions<ClientOptions> clientOptions
 ) : IAffirmationService
@@ -21,11 +22,9 @@ public sealed class AffirmationService(
 
     private string CacheKey => $"{ClientIpAddress}";
 
-    private static TimeSpan OneDay => TimeSpan.FromDays(1);
-
-    public async Task<Result<string>> Get()
+    public async Task<Result<string>> GetAffirmation()
     {
-        var remainingAffirmations = await Count();
+        var remainingAffirmations = await GetRemainingAffirmationsCount();
 
         var affirmationResponse = await affirmationClient.GetAffirmation();
         var affirmation = affirmationResponse.Affirmation ?? string.Empty;
@@ -36,21 +35,20 @@ public sealed class AffirmationService(
             return Result<string>.Error(new AffirmationNotFound());
         }
 
-        SetCount(remainingAffirmations);
+        await SetRemainingAffirmationsCount(remainingAffirmations);
 
         return Result<string>.Success(affirmation);
     }
 
-    public async Task<int> Count()
+    public async Task<int> GetRemainingAffirmationsCount()
     {
-        var remainingCount = await memoryCache.GetOrCreateAsync(
-            CacheKey,
-            entry =>
-            {
-                entry.SetAbsoluteExpiration(OneDay);
-                return Task.FromResult(ClientOptions.MaxRequestsPerDay);
-            }
-        );
+        var cachedValue = await redisClient.GetString(CacheKey);
+
+        if (int.TryParse(cachedValue, out var remainingCount) == false)
+        {
+            remainingCount = ClientOptions.MaxRequestsPerDay;
+            await redisClient.SetString(CacheKey, $"{remainingCount}", TimeSpan.OneDay);
+        }
 
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("{RemainingCount} affirmations remain for user {ClientIpAddress}", remainingCount, ClientIpAddress);
@@ -58,7 +56,7 @@ public sealed class AffirmationService(
         return remainingCount;
     }
 
-    private void SetCount(int count)
+    private async Task SetRemainingAffirmationsCount(int count)
     {
         if (count <= 0)
             return;
@@ -68,6 +66,6 @@ public sealed class AffirmationService(
         if (count <= 0)
             count = 0;
 
-        memoryCache.Set(CacheKey, count, OneDay);
+        await redisClient.SetString(CacheKey, $"{count}", TimeSpan.OneDay);
     }
 }

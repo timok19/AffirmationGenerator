@@ -8,7 +8,7 @@ public sealed class GetRemainingAffirmationsQuery(IAffirmationService affirmatio
 {
     public async Task<Result<RemainingAffirmationsResponse>> Handle()
     {
-        var remainingCount = await affirmationService.Count();
+        var remainingCount = await affirmationService.GetRemainingAffirmationsCount();
         return new RemainingAffirmationsResponse { RemainingCount = remainingCount };
     }
 }
