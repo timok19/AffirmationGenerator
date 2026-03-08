@@ -2,9 +2,8 @@ type ErrorMessageProps = {
   message: string;
 };
 
-function ErrorMessage({message}: ErrorMessageProps) {
-  if (!message) 
-    return null;
+function ErrorMessage({ message }: ErrorMessageProps) {
+  if (!message) return null;
 
   return (
     <div className="relative mt-4 w-full flex justify-center animate-slide-down z-0">

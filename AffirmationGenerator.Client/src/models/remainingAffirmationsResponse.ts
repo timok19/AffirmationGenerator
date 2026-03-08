@@ -1,5 +1,5 @@
 type RemainingAffirmationsResponse = {
-  remainingCount: number
-}
+  remainingCount: number;
+};
 
 export default RemainingAffirmationsResponse;

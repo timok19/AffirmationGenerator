@@ -1,49 +1,51 @@
-import './App.css';
+import "./App.css";
 import LanguagesDropdown from "./components/Affirmation/LanguagesDropdown.tsx";
 import ErrorMessage from "./components/Affirmation/ErrorMessage.tsx";
 import MainText from "./components/Affirmation/MainText.tsx";
 import RemainingItemsText from "./components/Affirmation/RemainingItemsText.tsx";
 import MainCard from "./components/MainCard.tsx";
 import Footer from "./components/Footer/Footer.tsx";
-import {useEffect, useState} from 'react';
-import axios, {HttpStatusCode} from 'axios';
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import AffirmationResponse from './models/affirmationResponse.ts';
+import { useEffect, useState } from "react";
+import axios, { HttpStatusCode } from "axios";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import AffirmationResponse from "./models/affirmationResponse.ts";
 import RemainingAffirmationsResponse from "./models/remainingAffirmationsResponse.ts";
 import AffirmationLanguagesResponse from "./models/affirmationLanguagesResponse.ts";
 
 function App() {
-  const [remainingAffirmations, setRemainingAffirmations] = useState(0);
-  const [affirmationText, setAffirmationText] = useState('Select a language for the affirmation');
-  const [displayedText, setDisplayedText] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [selectedLanguageCode, setSelectedLanguageCode] = useState('');
+  const [affirmationText, setAffirmationText] = useState("Select a language for the affirmation");
+  const [displayedText, setDisplayedText] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedLanguageCode, setSelectedLanguageCode] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  
+
   const queryClient = useQueryClient();
 
-  const {data: languages = []} = useQuery({
-    queryKey: ['languages'],
-    queryFn: () => axios
-      .get<AffirmationLanguagesResponse>('/affirmations/languages')
-      .then(response => response.data.languages)
-      .then(languages => Object.entries(languages).map(([code, label]) => ({code, label})))
+  const { data: languages = [] } = useQuery({
+    queryKey: ["languages"],
+    queryFn: () =>
+      axios
+        .get<AffirmationLanguagesResponse>("/affirmations/languages")
+        .then((response) => response.data.languages)
+        .then((languages) => Object.entries(languages).map(([code, label]) => ({ code, label }))),
   });
 
-  const {data: remainingCount} = useQuery({
-    queryKey: ['remainingAffirmations'],
-    queryFn: () => axios
-      .get<RemainingAffirmationsResponse>('/affirmations/remaining')
-      .then(response => response.data.remainingCount)
+  const { data: remainingCount } = useQuery({
+    queryKey: ["remainingAffirmations"],
+    queryFn: () =>
+      axios
+        .get<RemainingAffirmationsResponse>("/affirmations/remaining")
+        .then((response) => response.data.remainingCount),
   });
 
-  useEffect(() => {
-    if (remainingCount === undefined) return;
-    setRemainingAffirmations(remainingCount);
-    if (remainingCount !== 0) return;
-    setMaxAmountOfAffirmationsErrorMessage();
-  }, [remainingCount]);
+  const remainingAffirmations = remainingCount ?? 0;
+
+  const maxAffirmationsMessage =
+    "Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁";
+
+  const displayedErrorMessage =
+    remainingAffirmations === 0 && !errorMessage ? maxAffirmationsMessage : errorMessage;
 
   useEffect(() => {
     if (displayedText.length < affirmationText.length) {
@@ -55,55 +57,48 @@ function App() {
 
   const isTyping = displayedText.length < affirmationText.length;
   const isInteractionDisabled = isFetching || isTyping || remainingAffirmations === 0;
-  
-  function setMaxAmountOfAffirmationsErrorMessage() {
-    setErrorMessage('Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁');
-  }
-  
+
   function getAffirmation(targetLanguage: string) {
-    setErrorMessage('');
+    setErrorMessage("");
     setIsFetching(true);
     axios
-      .get<AffirmationResponse>('/affirmations', {params: {targetLanguage: targetLanguage}})
-      .then(response => response.data)
-      .then(data => {
+      .get<AffirmationResponse>("/affirmations", { params: { targetLanguage: targetLanguage } })
+      .then((response) => response.data)
+      .then((data) => {
         setAffirmationText(data.text);
-        setDisplayedText('');
-        setRemainingAffirmations(data.remainingCount);
-        queryClient.setQueryData(['remainingAffirmations'], data.remainingCount);
-        if (data.remainingCount === 0) 
-          setMaxAmountOfAffirmationsErrorMessage();
+        setDisplayedText("");
+        queryClient.setQueryData(["remainingAffirmations"], data.remainingCount);
+        if (data.remainingCount === 0) setErrorMessage(maxAffirmationsMessage);
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 500);
       })
-      .catch(error => {
+      .catch((error) => {
         if (axios.isAxiosError(error) && error.response?.status === HttpStatusCode.TooManyRequests)
-          setMaxAmountOfAffirmationsErrorMessage();
-        else
-          setErrorMessage('Unable to generate affirmation right now ☹️');
+          setErrorMessage(maxAffirmationsMessage);
+        else setErrorMessage("Unable to generate affirmation right now ☹️");
       })
       .finally(() => setIsFetching(false));
   }
 
   function handleLanguageChange(targetLanguage: string) {
-    if (isInteractionDisabled)
-      return;
+    if (isInteractionDisabled) return;
     setSelectedLanguageCode(targetLanguage);
     getAffirmation(targetLanguage);
   }
 
   return (
     <div className="animated-bg min-h-screen flex flex-col items-center justify-between p-4 font-sans text-gray-800">
-      <MainCard isShaking={isShaking} error={<ErrorMessage message={errorMessage}/>}>
-        <MainText text={displayedText} isLoading={isFetching}/>
-        <RemainingItemsText count={remainingAffirmations}/>
+      <MainCard isShaking={isShaking} error={<ErrorMessage message={displayedErrorMessage} />}>
+        <MainText text={displayedText} isLoading={isFetching} />
+        <RemainingItemsText count={remainingAffirmations} />
         <LanguagesDropdown
           value={selectedLanguageCode}
           onChange={handleLanguageChange}
           languages={languages}
-          disabled={isInteractionDisabled}/>
+          disabled={isInteractionDisabled}
+        />
       </MainCard>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
