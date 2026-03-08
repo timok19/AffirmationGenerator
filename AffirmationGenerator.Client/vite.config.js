@@ -17,7 +17,9 @@ export default defineConfig(function (_a) {
     var httpsConfig = undefined;
     // Setup https certificates for local development
     if (command === "serve") {
-        var baseFolder = env.APPDATA !== undefined && env.APPDATA !== "" ? "".concat(env.APPDATA, "/ASP.NET/https") : "".concat(env.HOME, "/.aspnet/https");
+        var baseFolder = env.APPDATA !== undefined && env.APPDATA !== ""
+            ? "".concat(env.APPDATA, "/ASP.NET/https")
+            : "".concat(env.HOME, "/.aspnet/https");
         var certificateName = "reactapp1.client";
         var certFilePath = path.join(baseFolder, "".concat(certificateName, ".pem"));
         var keyFilePath = path.join(baseFolder, "".concat(certificateName, ".key"));
