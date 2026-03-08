@@ -70,6 +70,10 @@ export default defineConfig(({ command }) => {
                 '^/openapi': {
                     target,
                     secure: false
+                },
+                '^/health': {
+                    target,
+                    secure: false
                 }
             },
             port: 5173,
