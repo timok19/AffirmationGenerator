@@ -27,7 +27,7 @@ public sealed class GetRemainingAffirmationsQueryTests : TestBase
     public async Task Handle_ShouldReturnRemainingAffirmationsCount(int maxRequestsPerDay)
     {
         // Arrange
-        _affirmationService.Count().Returns(maxRequestsPerDay);
+        _affirmationService.GetRemainingAffirmationsCount().Returns(maxRequestsPerDay);
 
         // Act
         var result = await _query.Handle();
@@ -37,6 +37,6 @@ public sealed class GetRemainingAffirmationsQueryTests : TestBase
         response.RemainingCount.ShouldBe(maxRequestsPerDay);
         response.RemainingCount.ShouldBeGreaterThanOrEqualTo(0);
 
-        await _affirmationService.Received(1).Count();
+        await _affirmationService.Received(1).GetRemainingAffirmationsCount();
     }
 }
