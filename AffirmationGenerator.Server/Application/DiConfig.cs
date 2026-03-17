@@ -1,6 +1,7 @@
 using AffirmationGenerator.Server.Application.Queries;
 using AffirmationGenerator.Server.Application.Services.Affirmation;
-using AffirmationGenerator.Server.Application.Services.Language;
+using AffirmationGenerator.Server.Application.Services.Mapping;
+using AffirmationGenerator.Server.Application.Services.Mapping.Language;
 using AffirmationGenerator.Server.Domain;
 
 namespace AffirmationGenerator.Server.Application;
@@ -21,7 +22,7 @@ public static class DiConfig
             services.AddScoped<GetAffirmationLanguagesQuery>();
 
             services.AddScoped<IAffirmationService, AffirmationService>();
-            services.AddScoped<ILanguageCodeMapper<AffirmationLanguage>, AffirmationLanguageCodeMapper>();
+            services.AddScoped<IMapper<AffirmationLanguage, string>, AffirmationLanguageMapper>();
 
             return services;
         }

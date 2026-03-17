@@ -4,8 +4,7 @@ using AffirmationGenerator.Server.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApi().AddApplication(builder.Configuration).AddInfrastructure(builder.Configuration);
-builder.Services.AddHealthChecks();
+builder.Services.AddApi().AddApplication(builder.Configuration).AddInfrastructure(builder.Configuration).AddHealthChecks();
 
 // Configure the HTTP request pipeline.
 var app = builder.Build();
