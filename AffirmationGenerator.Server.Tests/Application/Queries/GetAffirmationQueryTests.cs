@@ -37,7 +37,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         // Arrange
         const string affirmationText = "Good day!";
 
-        _affirmationService.GetAffirmation().ReturnsSuccess(affirmationText);
+        _affirmationService.Get().ReturnsSuccess(affirmationText);
 
         var getAffirmationRequest = new GetAffirmationRequest { TargetLanguage = AffirmationLanguage.English };
 
@@ -53,7 +53,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         response.Text.ShouldBe(affirmationText);
         response.RemainingCount.ShouldBeLessThan(MaxRequestsPerDay);
 
-        await _affirmationService.Received(1).GetAffirmation();
+        await _affirmationService.Received(1).Get();
         _affirmationLanguageMapper.Received(1).Map(AffirmationLanguage.English);
         await _translatorClient.DidNotReceiveWithAnyArgs().Translate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
@@ -65,7 +65,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         const string affirmationText = "Good day!";
         const string affirmationTextInGerman = "Guten Tag!";
 
-        _affirmationService.GetAffirmation().ReturnsSuccess(affirmationText);
+        _affirmationService.Get().ReturnsSuccess(affirmationText);
 
         var getAffirmationRequest = new GetAffirmationRequest { TargetLanguage = AffirmationLanguage.German };
 
@@ -82,7 +82,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         response.Text.ShouldBe(affirmationTextInGerman);
         response.RemainingCount.ShouldBeLessThan(MaxRequestsPerDay);
 
-        await _affirmationService.Received(1).GetAffirmation();
+        await _affirmationService.Received(1).Get();
         _affirmationLanguageMapper.Received(1).Map(AffirmationLanguage.German);
         await _translatorClient.Received(1).Translate(affirmationText, LanguageCode.English, LanguageCode.German);
     }
@@ -91,7 +91,7 @@ public sealed class GetAffirmationQueryTests : TestBase
     public async Task Handle_WhenNoAffirmation_ShouldReturnError()
     {
         // Arrange
-        _affirmationService.GetAffirmation().ReturnsError<string, AffirmationNotFound>();
+        _affirmationService.Get().ReturnsError<string, AffirmationNotFound>();
 
         var getAffirmationRequest = new GetAffirmationRequest { TargetLanguage = AffirmationLanguage.German };
 
@@ -101,7 +101,7 @@ public sealed class GetAffirmationQueryTests : TestBase
         // Assert
         result.ShouldBeError().ShouldBeOfType<AffirmationNotFound>();
 
-        await _affirmationService.Received(1).GetAffirmation();
+        await _affirmationService.Received(1).Get();
         _affirmationLanguageMapper.DidNotReceiveWithAnyArgs().Map(Arg.Any<AffirmationLanguage>());
         await _translatorClient.DidNotReceiveWithAnyArgs().Translate(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }

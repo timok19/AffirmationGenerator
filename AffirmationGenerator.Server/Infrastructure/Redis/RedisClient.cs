@@ -15,5 +15,7 @@ public sealed class RedisClient(IConnectionMultiplexer redis) : IRedisClient
     public async Task<bool> SetString(string key, string value, TimeSpan expiration) =>
         await Database.StringSetAsync(GetPrefixKey(key), value, expiration);
 
+    public async Task<TimeSpan?> GetKeyTtl(string key) => await Database.KeyTimeToLiveAsync(GetPrefixKey(key));
+
     private static string GetPrefixKey(string key) => $"{nameof(RedisClient)}:{key}";
 }

@@ -4,7 +4,9 @@ namespace AffirmationGenerator.Server.Application.Services.Affirmation;
 
 public interface IAffirmationService
 {
-    Task<Result<string>> GetAffirmation();
+    Task<Result<string>> Get();
 
-    Task<int> GetRemainingAffirmationsCount();
+    Task<int> GetRemainingCount();
+
+    Task<TimeSpan?> GetResetTime();
 }

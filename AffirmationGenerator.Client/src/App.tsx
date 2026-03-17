@@ -31,15 +31,16 @@ function App() {
         .then((languages) => Object.entries(languages).map(([code, label]) => ({ code, label }))),
   });
 
-  const { data: remainingCount } = useQuery({
+  const { data: remainingData } = useQuery({
     queryKey: ["remainingAffirmations"],
     queryFn: () =>
       axios
         .get<RemainingAffirmationsResponse>("/affirmations/remaining")
-        .then((response) => response.data.remainingCount),
+        .then((response) => response.data),
   });
 
-  const remainingAffirmations = remainingCount ?? 0;
+  const remainingAffirmations = remainingData?.remainingCount ?? 0;
+  const resetInSeconds = remainingData?.resetInSeconds ?? 0;
 
   const maxAffirmationsMessage =
     "Achieved maximum amount of affirmations per day. Come back tomorrow for more affirmations! 😁";
@@ -64,11 +65,18 @@ function App() {
     axios
       .get<AffirmationResponse>("/affirmations", { params: { targetLanguage: targetLanguage } })
       .then((response) => response.data)
-      .then((data) => {
+      .then(async (data) => {
         setAffirmationText(data.text);
         setDisplayedText("");
-        queryClient.setQueryData(["remainingAffirmations"], data.remainingCount);
-        if (data.remainingCount === 0) setErrorMessage(maxAffirmationsMessage);
+        if (data.remainingCount === 0) {
+          await queryClient.invalidateQueries({ queryKey: ["remainingAffirmations"] });
+          setErrorMessage(maxAffirmationsMessage);
+        } else {
+          queryClient.setQueryData(["remainingAffirmations"], {
+            remainingCount: data.remainingCount,
+            resetInSeconds: 0,
+          } as RemainingAffirmationsResponse);
+        }
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 500);
       })
@@ -90,7 +98,7 @@ function App() {
     <div className="animated-bg min-h-screen flex flex-col items-center justify-between p-4 font-sans text-gray-800">
       <MainCard isShaking={isShaking} error={<ErrorMessage message={displayedErrorMessage} />}>
         <MainText text={displayedText} isLoading={isFetching} />
-        <RemainingItemsText count={remainingAffirmations} />
+        <RemainingItemsText count={remainingAffirmations} resetInSeconds={resetInSeconds} />
         <LanguagesDropdown
           value={selectedLanguageCode}
           onChange={handleLanguageChange}
