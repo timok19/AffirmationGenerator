@@ -1,6 +1,6 @@
 using AffirmationGenerator.Server.Application.Models;
 using AffirmationGenerator.Server.Application.Services.Affirmation;
-using AffirmationGenerator.Server.Application.Services.Language;
+using AffirmationGenerator.Server.Application.Services.Mapping;
 using AffirmationGenerator.Server.Core;
 using AffirmationGenerator.Server.Core.Extensions;
 using AffirmationGenerator.Server.Domain;
@@ -12,13 +12,13 @@ namespace AffirmationGenerator.Server.Application.Queries;
 public sealed class GetAffirmationQuery(
     IDeepLTranslatorClient translatorClient,
     IAffirmationService affirmationService,
-    ILanguageCodeMapper<AffirmationLanguage> languageCodeMapper
+    IMapper<AffirmationLanguage, string> affirmationLanguageMapper
 )
 {
     public async Task<Result<AffirmationResponse>> Handle(GetAffirmationRequest request) =>
         await (
-            from affirmation in affirmationService.GetAffirmation()
-            from targetLanguageCode in languageCodeMapper.Map(request.TargetLanguage)
+            from affirmation in affirmationService.Get()
+            from targetLanguageCode in affirmationLanguageMapper.Map(request.TargetLanguage)
             from translatedAffirmation in Translate(affirmation, targetLanguageCode)
             select ToResponse(request.TargetLanguage, translatedAffirmation)
         );
@@ -40,6 +40,6 @@ public sealed class GetAffirmationQuery(
         {
             TargetLanguage = targetLanguage,
             Text = affirmation,
-            RemainingCount = await affirmationService.GetRemainingAffirmationsCount(),
+            RemainingCount = await affirmationService.GetRemainingCount(),
         };
 }

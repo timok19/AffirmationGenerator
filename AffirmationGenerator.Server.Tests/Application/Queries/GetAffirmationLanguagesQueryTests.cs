@@ -1,4 +1,5 @@
 ﻿using AffirmationGenerator.Server.Application.Queries;
+using AffirmationGenerator.Server.Domain;
 using AffirmationGenerator.Server.Tests.Extensions;
 using NUnit.Framework;
 using Shouldly;
@@ -23,9 +24,9 @@ public sealed class GetAffirmationLanguagesQueryTests : TestBase
         var result = _query.Handle();
 
         // Assert
-        var languages = result.ShouldBeSuccess().Languages;
+        var response = result.ShouldBeSuccess();
 
-        languages.Count.ShouldBeGreaterThan(0);
-        languages.ShouldBeInOrder(SortDirection.Ascending);
+        response.Languages.Count.ShouldBe(Enum.GetValues<AffirmationLanguage>().Length);
+        response.Languages.ShouldBeInOrder(SortDirection.Ascending);
     }
 }

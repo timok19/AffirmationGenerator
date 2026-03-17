@@ -8,11 +8,11 @@ public sealed class DeepLTranslatorClient(IOptions<DeepLTranslatorClientOptions>
 {
     private DeepLTranslatorClientOptions Options => options.Value;
 
-    public async Task<string> Translate(string text, string sourceLanguage, string targetLanguage)
+    public async Task<string> Translate(string text, string sourceLanguageCode, string targetLanguageCode)
     {
-        if (string.IsNullOrWhiteSpace(targetLanguage))
+        if (string.IsNullOrWhiteSpace(sourceLanguageCode) || string.IsNullOrWhiteSpace(targetLanguageCode))
         {
-            logger.LogError("Unable to translate text. Target language is not set");
+            logger.LogError("Unable to translate text. Source or target language is not set");
             return string.Empty;
         }
 
@@ -23,9 +23,10 @@ public sealed class DeepLTranslatorClient(IOptions<DeepLTranslatorClientOptions>
 
         try
         {
-            var textResult = await client.TranslateTextAsync(text, sourceLanguage, targetLanguage);
+            var textResult = await client.TranslateTextAsync(text, sourceLanguageCode, targetLanguageCode);
 
-            logger.LogInformation("Billed characters {BilledCharacters}", textResult.BilledCharacters);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Billed characters {BilledCharacters}", textResult.BilledCharacters);
 
             return textResult.Text;
         }

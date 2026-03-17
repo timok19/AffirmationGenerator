@@ -22,9 +22,9 @@ public sealed class AffirmationService(
 
     private string CacheKey => $"{ClientIpAddress}";
 
-    public async Task<Result<string>> GetAffirmation()
+    public async Task<Result<string>> Get()
     {
-        var remainingAffirmations = await GetRemainingAffirmationsCount();
+        var remainingAffirmations = await GetRemainingCount();
 
         var affirmationResponse = await affirmationClient.GetAffirmation();
         var affirmation = affirmationResponse.Affirmation ?? string.Empty;
@@ -35,12 +35,12 @@ public sealed class AffirmationService(
             return Result<string>.Error(new AffirmationNotFound());
         }
 
-        await SetRemainingAffirmationsCount(remainingAffirmations);
+        await SetRemainingCount(remainingAffirmations);
 
         return Result<string>.Success(affirmation);
     }
 
-    public async Task<int> GetRemainingAffirmationsCount()
+    public async Task<int> GetRemainingCount()
     {
         var cachedValue = await redisClient.GetString(CacheKey);
 
@@ -56,7 +56,9 @@ public sealed class AffirmationService(
         return remainingCount;
     }
 
-    private async Task SetRemainingAffirmationsCount(int count)
+    public async Task<TimeSpan?> GetResetTime() => await redisClient.GetKeyTtl(CacheKey);
+
+    private async Task SetRemainingCount(int count)
     {
         if (count <= 0)
             return;
@@ -66,6 +68,8 @@ public sealed class AffirmationService(
         if (count <= 0)
             count = 0;
 
-        await redisClient.SetString(CacheKey, $"{count}", TimeSpan.OneDay);
+        var resetTime = await GetResetTime() ?? TimeSpan.OneDay;
+
+        await redisClient.SetString(CacheKey, $"{count}", resetTime);
     }
 }
