@@ -8,10 +8,10 @@ import path from "path";
 import child_process from "child_process";
 import { env } from "process";
 
-const target = env.ASPNETCORE_HTTPS_PORT
-  ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}`
-  : env.ASPNETCORE_URLS
-    ? env.ASPNETCORE_URLS.split(";")[0]
+const target = env["ASPNETCORE_HTTPS_PORT"]
+  ? `https://localhost:${env["ASPNETCORE_HTTPS_PORT"]}`
+  : env["ASPNETCORE_URLS"]
+    ? env["ASPNETCORE_URLS"].split(";")[0]
     : "https://localhost:7006";
 
 // https://vitejs.dev/config/
@@ -21,9 +21,9 @@ export default defineConfig(({ command }) => {
   // Setup https certificates for local development
   if (command === "serve") {
     const baseFolder =
-      env.APPDATA !== undefined && env.APPDATA !== ""
-        ? `${env.APPDATA}/ASP.NET/https`
-        : `${env.HOME}/.aspnet/https`;
+      env["APPDATA"] !== undefined && env["APPDATA"] !== ""
+        ? `${env["APPDATA"]}/ASP.NET/https`
+        : `${env["HOME"]}/.aspnet/https`;
 
     const certificateName = "reactapp1.client";
     const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
