@@ -13,6 +13,7 @@ public sealed class AffirmationLanguageMapper : IMapper<AffirmationLanguage, str
             AffirmationLanguage.German => LanguageCode.German,
             AffirmationLanguage.Czech => LanguageCode.Czech,
             AffirmationLanguage.French => LanguageCode.French,
+            AffirmationLanguage.Russian => LanguageCode.Russian,
             _ => Result<string>.Error(new InvalidLanguageCode(value.ToString())),
         };
 }

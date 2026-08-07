@@ -9,4 +9,5 @@ public enum AffirmationLanguage
     German = 1,
     Czech = 2,
     French = 3,
+    Russian = 4,
 }
