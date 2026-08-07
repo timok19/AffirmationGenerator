@@ -32,7 +32,7 @@ public static class DiConfig
         {
             services.Configure<AffirmationClientOptions>(configuration.GetSection(nameof(AffirmationClientOptions)));
             services
-                .AddRefitClient<IAffirmationClient>()
+                .AddRefitGeneratedClient<IAffirmationClient>()
                 .ConfigureHttpClient(
                     (serviceProvider, httpClient) =>
                     {
